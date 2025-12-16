@@ -2,57 +2,11 @@ from database_connections import open_database_connection, close_database_connec
 import sqlite3 as sql
 object = open_database_connection("budget.db")
 cursor = object.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS monthly_budget(id INTEGER PRIMARY KEY AUTOINCREMENT,year int,month int, amount_limit REAL, CONSTRAINTS unique year_month UNIQUE(year,month))")
-cursor.execute("CREATE TABLE IF NOT EXISTS monthly_category_budget(id INTEGER PRIMARY KEY AUTOINCREMENT,year int,month int, category VARCHAR, amount_limit REAL ,CONSTRAINTS year_month_category UNIQUE(year,month,category))")
-cursor.execute("CREATE TABLE IF NOT EXISTS monthly_payment_method_budget(id INTEGER PRIMARY KEY AUTOINCREMENT,year int,month int, payment_method VARCHAR, amount_limit REAL , CONSTRAINTS year_month_payment UNIQUE(year,month,payment_method))")
-
-def validate_input_year_month_amount(year:int, month:int, amount_limit:float) -> tuple:
-    ''' Validates the input year, month, and amount_limit for setting a monthly budget.
-
-    args:
-        year (int): The year to validate.
-        month (int): The month to validate (1-12).
-        amount_limit (float): The budget limit to validate (must be positive).
-    returns:
-        tuple: A tuple containing a boolean indicating validity and a message.'''
-    error_messages = []
-    if not (isinstance(year, int) and year > 0):
-        error_messages.append("Invalid year. Year must be a positive integer.")
-    if not (isinstance(month, int) and 1 <= month <= 12):
-        error_messages.append("Invalid month. Month must be an integer between 1 and 12.")
-    if not (isinstance(amount_limit, (int, float)) and amount_limit > 0):
-        error_messages.append("Invalid amount limit. Amount limit must be a positive number.")
-    if error_messages:
-        return (False, " ".join(error_messages))
-    return (True, "Valid input.")
-
-def validate_amount_limit(amount_limit:float) -> tuple:
-    ''' Validates the input amount_limit for setting a monthly budget.
-
-    args:
-        amount_limit (float): The budget limit to validate (must be positive).
-    returns:
-        tuple: A tuple containing a boolean indicating validity and a message.'''
-    if not (isinstance(amount_limit, (int, float)) and amount_limit > 0):
-        return (False, "Invalid amount limit. Amount limit must be a positive number.")
-    return (True, "Valid input.")
-    
-def validate_year_month(year:int, month:int) -> tuple:
-    ''' Validates the input year and month for retrieving a monthly budget.
-
-    args:
-        year (int): The year to validate.
-        month (int): The month to validate (1-12).
-    returns:
-        tuple: A tuple containing a boolean indicating validity and a message.'''
-    error_messages = []
-    if not (isinstance(year, int) and year > 0):
-        error_messages.append("Invalid year. Year must be a positive integer.")
-    if not (isinstance(month, int) and 1 <= month <= 12):
-        error_messages.append("Invalid month. Month must be an integer between 1 and 12.")
-    if error_messages:
-        return (False, " ".join(error_messages))
-    return (True, "Valid input.")
+cursor.execute("CREATE TABLE IF NOT EXISTS monthly_budget(id INTEGER PRIMARY KEY AUTOINCREMENT,year int,month int, amount_limit REAL, CONSTRAINT  year_month UNIQUE(year,month))")
+cursor.execute("CREATE TABLE IF NOT EXISTS monthly_category_budget(id INTEGER PRIMARY KEY AUTOINCREMENT,year int,month int, category VARCHAR, amount_limit REAL ,CONSTRAINT year_month_category UNIQUE(year,month,category))")
+cursor.execute("CREATE TABLE IF NOT EXISTS monthly_payment_method_budget(id INTEGER PRIMARY KEY AUTOINCREMENT,year int,month int, payment_method VARCHAR, amount_limit REAL , CONSTRAINT  year_month_payment UNIQUE(year,month,payment_method))")
+# Importing validation functions from validators.py to validate input data before database operations
+from validators import validate_input_year_month_amount, validate_year_month
 
 def set_update_monthly_budget(year:int, month:int, amount_limit:float) -> tuple:
     ''' Checks if a given year and month combination exists in the table
@@ -209,6 +163,7 @@ def balance_budget(year:int, month:int, category:str=None, payment_method:str=No
     '''Calculates the remaining budget for a given month and year.
        if category is provided it returns remaining budget for that category 
        and if payment method is provided it returns remaining budget for that payment method
+       and if budget is exceeded it returns by how much it is exceeded.
 
     args:
         year (int): The year for which to calculate the remaining budget.
@@ -313,5 +268,6 @@ def delete_budget_limit(year:int, month:int, category:str=None, payment_method:s
     cursor.execute("DELETE FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
     object.commit()
     return (True, "Monthly budget deleted successfully.")
+object.commit()
 
 close_database_connection(object)
