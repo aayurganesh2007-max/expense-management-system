@@ -84,3 +84,18 @@ def validate_year_month(year:int, month:int) -> tuple:
     if error_messages:
         return (False, " ".join(error_messages))
     return (True, "Valid input.")
+
+def valid_year_in_database(year: int) -> bool:
+    ''' Checks if the given year exists in the expenses database.
+
+    args:
+        year (int): The year to check.
+    returns:
+        bool: True if the year exists in the database, False otherwise.'''
+    import sqlite3 as sql
+    conn = sql.connect('expense.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT strftime('%Y', date) as year FROM expenses")
+    years = [int(row[0]) for row in cursor.fetchall()]
+    conn.close()
+    return year in years
