@@ -39,6 +39,7 @@ def refresh_expense_df():
     global expense_pd_df
     expense_pd_df = fetch_expense_data('expense.db')
     expense_pd_df['date'] = pd.to_datetime(expense_pd_df['date'])
+    #print(expense_pd_df)
 
 def refresh_monthly_budget_dfs():
     '''Refresh the global budget DataFrames by fetching the latest data from the database.
@@ -78,8 +79,10 @@ def refresh_monthly_payment_method_budget_dfs():
         None'''
     global monthly_payment_method_budget_pd_df
     monthly_payment_method_budget_pd_df = fetch_budget_data('budget.db', 'monthly_payment_method_budget')
+
 """
 print(refresh_expense_df())
+
 print(refresh_monthly_budget_dfs())
 print(refresh_monthly_category_budget_dfs())
 print(refresh_monthly_payment_method_budget_dfs())"""
@@ -126,7 +129,7 @@ def get_daily_expense_month_year_df(year:int, month:int) -> tuple:
     # format month to two digits
     month_str = f"{month:02d}"
     # select rows for the specified year and month
-    df_month = expense_pd_df[expense_pd_df['date'].dt.year == year & expense_pd_df['date'].dt.month == month].copy()
+    df_month = expense_pd_df.loc[(expense_pd_df['date'].dt.year == year) & (expense_pd_df['date'].dt.month == month)].copy()
     # extract day number
     df_month['day_num'] = (df_month['date']).dt.day
     # aggregate sums by day number
@@ -158,7 +161,7 @@ def get_category_expense_month_year_df(year:int, month:int) -> tuple:
     # format month to two digits
     month_str = f"{month:02d}"
     # select rows for the specified year and month
-    df_month = expense_pd_df[expense_pd_df['date'].dt.year == year & expense_pd_df['date'].dt.month == month].copy()
+    df_month = expense_pd_df.loc[(expense_pd_df['date'].dt.year == year) & (expense_pd_df['date'].dt.month == month)].copy()
     # aggregate sums by category
     category_expenses = df_month.groupby('category')['amount'].sum().reset_index()
     # rename columns to ['category', 'amount']
@@ -166,7 +169,7 @@ def get_category_expense_month_year_df(year:int, month:int) -> tuple:
     from constant import constants
     valid_categories = constants['valid_categories']
     category_expenses = category_expenses.set_index('category').reindex(valid_categories, fill_value=0).reset_index()
-
+    category_expenses
     category_expenses.columns = ['category', 'amount']
     # find maximum spent category
     max_category = category_expenses.loc[category_expenses['amount'].idxmax()]
@@ -185,7 +188,7 @@ def get_payment_method_expense_month_year_df(year:int, month:int) -> tuple:
     # format month to two digits
     month_str = f"{month:02d}"
     # select rows for the specified year and month
-    df_month = expense_pd_df[expense_pd_df['date'].dt.year == year & expense_pd_df['date'].dt.month == month].copy()
+    df_month = expense_pd_df.loc[(expense_pd_df['date'].dt.year == year) & (expense_pd_df['date'].dt.month == month)].copy()
     # aggregate sums by payment method
     payment_method_expenses = df_month.groupby('payment_method')['amount'].sum().reset_index()
     # rename columns to ['payment_method', 'amount']

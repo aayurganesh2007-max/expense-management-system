@@ -206,10 +206,11 @@ def search_expenses(date_range:tuple=None, category:str=None, payment_method:str
             if not validate_payment_method(payment_method):
                 return (False,f"Error: Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
             cursor.execute("SELECT * FROM expenses WHERE payment_method=?", (payment_method,))          
-        elif amount_range:
+        elif amount_range:                                                    
             if (not validate_amount(amount_range[0])) or (not validate_amount(amount_range[1])):
                 return (False,"Error: Amount must be a valid number.")
             cursor.execute("SELECT * FROM expenses WHERE amount BETWEEN ? AND ?", (amount_range[0], amount_range[1]))
+            
         records = cursor.fetchall()
         return (True,records)
 

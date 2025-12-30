@@ -85,17 +85,54 @@ def validate_year_month(year:int, month:int) -> tuple:
         return (False, " ".join(error_messages))
     return (True, "Valid input.")
 
-def valid_year_in_database(year: int) -> bool:
-    ''' Checks if the given year exists in the expenses database.
+def valid_year_month_in_database(year: int, month: int,database: str, table_name: str) -> bool:
+    ''' Checks if the given year and month exists in the given database.
+    expense database consists of single table: expenses.
+    budget database consists of three tables: monthly_budget, monthly_category_budget, and monthly_payment_method_budget.
+    if the year exists in the database, returns True else returns False.
 
     args:
         year (int): The year to check.
+        month (int): The month to check (1-12).
+        table_name (str): The name of the table to check.
     returns:
-        bool: True if the year exists in the database, False otherwise.'''
-    import sqlite3 as sql
-    conn = sql.connect('expense.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT strftime('%Y', date) as year FROM expenses")
-    years = [int(row[0]) for row in cursor.fetchall()]
-    conn.close()
-    return year in years
+        bool: True if the year and month data exists in the database, else False.'''
+    from database_connections import open_database_connection, close_database_connection
+    with open_database_connection(database) as object:
+        if database == "budget.db":
+            cursor = object.cursor()
+            cursor.execute(f"SELECT year FROM {table_name} WHERE year = ? AND month = ?", (year, month))
+            if cursor.fetchone():
+                return True
+        elif database == "expense.db":
+            cursor = object.cursor()
+            cursor.execute(f"SELECT * FROM {table_name} WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ?", (str(year), f"{month:02d}"))
+            if cursor.fetchone():
+                return True
+    return False
+
+def valid_year_in_database(year: int, database: str, table_name: str) -> tuple:
+    ''' Checks if the given year exists in the given database.
+    expense database consists of single table: expenses.
+    budget database consists of three tables: monthly_budget, monthly_category_budget, and monthly_payment_method_budget.
+    if the year exists in the database, returns True else returns False.
+
+    args:
+        year (int): The year to check.
+        database (str): The name of the database file.
+        table_name (str): The name of the table to check.
+    returns:
+        bool: True if the year data exists in the database, else False.'''
+    from database_connections import open_database_connection, close_database_connection
+    with open_database_connection(database) as object:
+        cursor = object.cursor()
+        if database == "budget.db":
+            cursor.execute(f"SELECT year FROM {table_name} WHERE year = ?", (year,))
+            if cursor.fetchone():
+                return True
+        elif database == "expense.db":
+            cursor.execute(f"SELECT * FROM {table_name} WHERE strftime('%Y', date) = ?", (str(year),))
+            if cursor.fetchone():
+                return True
+    return False   
+        

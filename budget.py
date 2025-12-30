@@ -193,15 +193,16 @@ def balance_budget(year:int, month:int, category:str=None, payment_method:str=No
         return (False, "Budget exceeded by {:.2f}".format(-remaining_budget))
     return (True, remaining_budget)
 
-def get_all_budgets() -> list:
+def get_all_budgets() ->tuple:
     '''Retrieves all monthly budgets from the database.
 
     returns:
-        list: A list of tuples, each containing the year, month, and amount_limit of a budget.'''
-    with open_database_connection("database.db") as object:
-        cursor.execute("SELECT year, month, amount_limit FROM monthly_budget")
+        tuple: A tuple of a boolean and a list of tuples, each containing the year, month, and amount_limit of a budget.or an error message.'''
+    with open_database_connection("budget.db") as object:
+        cursor = object.cursor()
+        cursor.execute("SELECT id,year, month, amount_limit FROM monthly_budget")
         budgets = cursor.fetchall()
-        return budgets
+        return (True,budgets)
 
 def get_all_category_budgets(year:int=None, month:int=None) -> list:
     '''Retrieves all monthly category budgets for a specific month and year from the database.
@@ -213,7 +214,8 @@ def get_all_category_budgets(year:int=None, month:int=None) -> list:
         month (int): The month for which to retrieve category budgets (1-12).(optional)
     returns:
         list: A tuple of a boolean and a list of tuples, each containing the category and amount_limit of a budget.or an error message.'''
-    with open_database_connection("database.db") as object:
+    with open_database_connection("budget.db") as object:
+        cursor = object.cursor()
         if year and month:
             valid,message = validate_year_month(year, month)
             if not valid:
@@ -225,7 +227,7 @@ def get_all_category_budgets(year:int=None, month:int=None) -> list:
             cursor.execute("SELECT category, amount_limit FROM monthly_category_budget WHERE year = ?", (year,))
             budgets = cursor.fetchall()
             return (True,budgets)
-        cursor.execute("SELECT category, amount_limit FROM monthly_category_budget")
+        cursor.execute("SELECT id,year, month, category, amount_limit FROM monthly_category_budget")   
         budgets = cursor.fetchall()
         return (True,budgets)
 
@@ -239,7 +241,8 @@ def get_all_payment_method_budgets(year:int=None, month:int=None) -> list:
         month (int): The month for which to retrieve payment method budgets (1-12).(optional)
     returns:
         list: A tuple of a boolean and a list of tuples, each containing the payment method and amount_limit of a budget.or an error message.'''
-    with open_database_connection("database.db") as object:
+    with open_database_connection("budget.db") as object:
+        cursor = object.cursor()
         if year and month:
             valid,message = validate_year_month(year, month)
             if not valid:
@@ -251,7 +254,7 @@ def get_all_payment_method_budgets(year:int=None, month:int=None) -> list:
             cursor.execute("SELECT payment_method, amount_limit FROM monthly_payment_method_budget WHERE year = ?", (year,))
             budgets = cursor.fetchall()
             return (True,budgets)
-        cursor.execute("SELECT payment_method, amount_limit FROM monthly_payment_method_budget")
+        cursor.execute("SELECT id,year, month, payment_method, amount_limit FROM monthly_payment_method_budget")
         budgets = cursor.fetchall()
         return (True,budgets)
 
@@ -265,7 +268,8 @@ def delete_budget_limit(year:int, month:int, category:str=None, payment_method:s
         month (int): The month for which the budget is to be deleted (1-12).
     returns:
         tuple: A tuple containing a boolean indicating success or failure, and a message.'''
-    with open_database_connection("database.db") as object:
+    with open_database_connection("budget.db") as object:
+        cursor = object.cursor()
         if category:
             from expense import validate_category
             if not validate_category(category):
