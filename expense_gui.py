@@ -3,8 +3,9 @@ from tkinter import ttk, messagebox
 from tkcalendar import  DateEntry
 from constant import constants
 from expense import add_expense, delete_expense , update_expense,view_expenses, search_expenses, get_expense_by_id
+from analytics import export_budget_csv, export_expense_csv
 
-def open_expense_window(window):
+def open_expense_window(window:tk.Tk):
     '''Function to open the expense management window and operate on this window with different frames and widgets.
     args:
         window: the main window
@@ -36,28 +37,17 @@ def open_expense_window(window):
     update_expense_btn = tk.Button(expense_frame, text="Update Expense", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: update_expense_ui(expense_content_frame))
     update_expense_btn.grid(row=2, column=0, pady=(10,0))
     #button for viewing expenses
-    view_expenses_btn = tk.Button(expense_frame, text="View Expenses", font=("Arial", 20, "bold"), bg="#0398fc", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(view_expenses(), expense_content_frame))
+    view_expenses_btn = tk.Button(expense_frame, text="View Expenses", font=("Arial", 20, "bold"), bg="#0398fc", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(view_expenses(), expense_content_frame,file_name="expenses.csv"))
     view_expenses_btn.grid(row=3, column=0, pady=(10,0))
 
-    def export_expenses():
-        '''Function to export expenses from the database by creating a new frame in the same window when called.
-        args:
-            None
-        returns:
-            None'''
-        pass
-    export_expenses_btn = tk.Button(expense_frame, text="Export Expenses", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=export_expenses)
-    export_expenses_btn.grid(row=4, column=0, pady=(10,0))
-
-
-    search_expenses_btn = tk.Button(expense_frame, text="Search Expenses", font=("Arial", 20, "bold"), bg="#0398fc", fg="black", bd=6, relief="raised", justify="center", command= lambda: search_expenses_ui(expense_content_frame))
-    search_expenses_btn.grid(row=5, column=0, pady=(10,0))
+    search_expenses_btn = tk.Button(expense_frame, text="Search Expenses", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command= lambda: search_expenses_ui(expense_content_frame))
+    search_expenses_btn.grid(row=4, column=0, pady=(10,0))
 
 
     expense_destroy_btn = tk.Button(expense_frame, text="Close", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=new_expense_window.destroy)
-    expense_destroy_btn.grid(row=6, column=0, pady=(10,0))
+    expense_destroy_btn.grid(row=5, column=0, pady=(10,0))
 
-def clear_content(expense_content_frame):
+def clear_content(expense_content_frame:tk.Frame):
     '''Clears all content from the main frame, before opening a new frame
     args:
          expense_content_frame : the main content frame to clear
@@ -65,9 +55,9 @@ def clear_content(expense_content_frame):
     None'''
     for widget in expense_content_frame.winfo_children():
         widget.destroy()
-def new_expense(expense_content_frame):
+def new_expense(expense_content_frame:tk.Frame):
         '''Function to add a new expense to the database by creating a new frame in the same window
-          when called after clearing all thre existing frames in the same window.
+          when called after clearing all three existing frames in the same window.
           it also has a vertical scroll feature fitting the exact length
         of the frame to accommodate all options
         it also resizes approprialtely according to the window size
@@ -155,7 +145,7 @@ def new_expense(expense_content_frame):
         new_expense_save_btn.grid(row=12, column=0, pady=(20,0))
 
 
-def delete_expense_ui(expense_content_frame):
+def delete_expense_ui(expense_content_frame:tk.Frame):
     '''Function to delete an expense from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.
     args:
@@ -190,7 +180,7 @@ def delete_expense_ui(expense_content_frame):
     delete_expense_id_btn = tk.Button(delete_expense_frame, text="Delete Expense", font=("Arial", 20, "bold"), bg="#0398fc", fg="black", bd=6, relief="raised", justify="center", command=delete_expense_id)
     delete_expense_id_btn.grid(row=3, column=0, pady=(20,0))
 
-def update_expense_ui(expense_content_frame):
+def update_expense_ui(expense_content_frame:tk.Frame):
         '''Function to update an expense from the database by creating a new frame in the same window when called, 
         after clearing all the existing frames.it also has a vertical scroll feature fitting the exact length
         of the frame to accommodate all options. The frame also resizes approprialtely according to the window size
@@ -295,12 +285,13 @@ def update_expense_ui(expense_content_frame):
         update_expense_save_btn = tk.Button(update_expense_frame, text="Update Expense", font=("Arial", 20, "bold"), bg="#0ae2d0", fg="black", bd=6, relief="raised", justify="center", command=submit_update_expense)
         update_expense_save_btn.grid(row=16, column=0, pady=(2,0))
 
-def view_expenses_ui(view_expense_tuple, expense_content_frame):
+def view_expenses_ui(view_expense_tuple:tuple, expense_content_frame:tk.Frame,file_name:str):
     '''Function to view all expenses from the database by creating a new frame in the same window when called.
     it uses ttk.Treeview to display the expenses in a tabular format with scrollbars.
     the column headers are id, date, amount, category, description, payment_method.
     the data is in the form of list of tuples where each tuple is a record
     displays each record in a seperate line under the respective header columns
+    It also provides a button to export the expenses to a csv file,and returns a message box if the operation is successful or not.
     args:
         view_expense_tuple: A tuple containing the validity of the operation and the list of expenses.
         expense_content_frame: The frame where the view expenses frame will be created.
@@ -336,8 +327,27 @@ def view_expenses_ui(view_expense_tuple, expense_content_frame):
     tree.grid(row=0, column=0, sticky="nsew")
     view_expenses_frame.grid_rowconfigure(0, weight=1)
     view_expenses_frame.grid_columnconfigure(0, weight=1)
+    #create a button to export the expenses to a csv file
+    export_expenses_btn = tk.Button(view_expenses_frame, text="Export Expenses", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=lambda: export_expense_csv_ui())
+    export_expenses_btn.grid(row=2, column=0, pady=(20,0))
+    def export_expense_csv_ui():
+        '''Function to export expenses from the database by creating a new frame in the same window when called.
+        also checks if the write operation is successful or not.And returns a message box if the operation is successful or not.
+        args:
+            None
+        returns:
+            None'''
+        valid = export_expense_csv(file_name,view_expense_tuple)
+        if valid:
+            messagebox.showinfo("Success", "Expenses exported successfully.")
+            view_expenses_frame.destroy()
+        else:
+            messagebox.showerror("Error", "Failed to export expenses.")
+            view_expenses_frame.destroy()
 
-def search_expenses_ui(expense_content_frame):
+
+
+def search_expenses_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses from the database by creating a new frame in the same window when called.
     args:
         expense_content_frame: The frame where the search expenses frame will be created.
@@ -366,7 +376,7 @@ def search_expenses_ui(expense_content_frame):
     search_expense_paymentmethod_btn = tk.Button(search_expense_frame, text="Search by Payment Method", font=("Arial", 20, "bold"), bg="#0398fc", fg="black", bd=6, relief="raised", justify="center", command=lambda: search_expenses_paymentmethod_ui(expense_content_frame))
     search_expense_paymentmethod_btn.grid(row=5, column=0, pady=(20,0))
 
-def search_expenses_daterange_ui(expense_content_frame):
+def search_expenses_daterange_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses by date range.
     args:
         expense_content_frame: the frame where the search expenses frame will be created.
@@ -389,10 +399,10 @@ def search_expenses_daterange_ui(expense_content_frame):
 
     end_date_entry = DateEntry(search_daterange_frame, font=("Arial", 20), bg="white", fg="black", date_pattern='yyyy-mm-dd', justify="center")
     end_date_entry.grid(row=4, column=0, pady=(6, 0))
-    search_btn = tk.Button(search_daterange_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command= lambda: view_expenses_ui(search_expenses(date_range=(start_date_entry.get(),end_date_entry.get())), expense_content_frame))
+    search_btn = tk.Button(search_daterange_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command= lambda: view_expenses_ui(search_expenses(date_range=(start_date_entry.get(),end_date_entry.get())), expense_content_frame,"expenses_date_range.csv"))
     search_btn.grid(row=5, column=0, pady=(20, 0))
 
-def search_expenses_amountrange_ui(expense_content_frame):
+def search_expenses_amountrange_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses by amount range.
     args:
         expense_content_frame: the frame where the search expenses frame will be created.
@@ -414,10 +424,10 @@ def search_expenses_amountrange_ui(expense_content_frame):
     max_amount_entry = tk.Entry(search_amountrange_frame, font=("Arial", 20), bg="white", fg="black", justify="center")
     max_amount_entry.grid(row=4, column=0, pady=(6, 0))
 
-    search_btn = tk.Button(search_amountrange_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command= lambda: view_expenses_ui(search_expenses(amount_range=(min_amount_entry.get(), max_amount_entry.get())), expense_content_frame))
+    search_btn = tk.Button(search_amountrange_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command= lambda: view_expenses_ui(search_expenses(amount_range=(min_amount_entry.get(), max_amount_entry.get())), expense_content_frame,"expenses_amount_range.csv"))
     search_btn.grid(row=5, column=0, pady=(20, 0))
 
-def search_expenses_category_ui(expense_content_frame):
+def search_expenses_category_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses by category.
     args:
         expense_content_frame: the frame where the search expenses frame will be created.
@@ -433,10 +443,10 @@ def search_expenses_category_ui(expense_content_frame):
     category_combobox = ttk.Combobox(search_category_frame, width=20, font=("Arial", 16), values=constants['valid_categories'],textvariable=tk.StringVar(), state="readonly",justify="center")
     category_combobox.grid(row=2, column=0, pady=(6, 0))
 
-    search_btn = tk.Button(search_category_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(search_expenses(category=category_combobox.get()), expense_content_frame))
+    search_btn = tk.Button(search_category_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(search_expenses(category=category_combobox.get()), expense_content_frame,"expenses_category.csv"))
     search_btn.grid(row=3, column=0, pady=(20, 0))
 
-def search_expenses_paymentmethod_ui(expense_content_frame):
+def search_expenses_paymentmethod_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses by payment method.
     args:
         expense_content_frame: the frame where the search expenses frame will be created.
@@ -452,10 +462,10 @@ def search_expenses_paymentmethod_ui(expense_content_frame):
     payment_method_combobox = ttk.Combobox(search_paymentmethod_frame, width=20, font=("Arial", 16), values=constants['valid_payment_methods'],textvariable=tk.StringVar(), state="readonly",justify="center")
     payment_method_combobox.grid(row=2, column=0, pady=(6, 0))
 
-    search_btn = tk.Button(search_paymentmethod_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(search_expenses(payment_method=payment_method_combobox.get()), expense_content_frame))
+    search_btn = tk.Button(search_paymentmethod_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(search_expenses(payment_method=payment_method_combobox.get()), expense_content_frame,"expenses_payment_method.csv"))
     search_btn.grid(row=3, column=0, pady=(20, 0))
 
-def search_expenses_expid_ui(expense_content_frame):
+def search_expenses_expid_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses by expense ID.
     args:
         expense_content_frame: the frame where the search expenses frame will be created.
@@ -471,5 +481,5 @@ def search_expenses_expid_ui(expense_content_frame):
     expense_id_entry = tk.Entry(search_expid_frame, font=("Arial", 20), bg="white", fg="black", justify="center")
     expense_id_entry.grid(row=2, column=0, pady=(6, 0))
     
-    search_btn = tk.Button(search_expid_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(get_expense_by_id(expense_id=expense_id_entry.get()), expense_content_frame))
+    search_btn = tk.Button(search_expid_frame, text="Search", font=("Arial", 20, "bold"), bg="#0ad4b6", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_expenses_ui(get_expense_by_id(expense_id_entry.get()),expense_content_frame,"expenses_id.csv"))
     search_btn.grid(row=3, column=0, pady=(20, 0))

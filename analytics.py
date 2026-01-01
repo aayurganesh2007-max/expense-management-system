@@ -1,5 +1,6 @@
 import pandas as pd
 from database_connections import open_database_connection, close_database_connection
+import csv
 def fetch_expense_data(db_name: str) -> pd.DataFrame:
     ''' Generates a pandas DataFrame containing all expenses from the database.
     args:
@@ -270,3 +271,38 @@ def get_payment_method_monthly_budget_year_df(year:int, month:int) -> tuple:
     max_budget = {'payment_method': max_payment_method['payment_method'], 'amount': float(max_payment_method['amount_limit'])}
     return (payment_method_budgets, max_budget)
 
+def export_expense_csv(filename:str, expense_tuple:tuple) -> bool:
+    '''Exports the given expense data and writes it into a csv file according to the file name
+    It also returns a boolean indicating success or failure.
+    args:
+        filename (str): The name of the file to write to.
+        expense_tuple (tuple): A tuple containing the validity of the operation and the list of expenses.
+    returns:
+        bool: True if the file is written successfully, False otherwise.'''
+    valid,expenses = expense_tuple
+    if not valid:
+        return False
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['id', 'date', 'amount', 'category', 'description', 'payment_method'])
+        writer.writerows(expenses)
+    return True
+
+def export_budget_csv(filename:str, budget_tuple:tuple, column_names:list) -> bool:
+    '''Exports the given budget data and writes it into a csv file according to the file name and column names
+    It also returns a boolean indicating success or failure.
+    
+    args:
+        filename (str): The name of the file to write to.
+        budget_tuple (tuple): A tuple containing the validity of the operation and the list of budgets.
+        column_names (list): A list of strings containing the column names to be used in the csv file.
+    returns:
+        bool: True if the file is written successfully, False otherwise.'''
+    valid,budgets = budget_tuple
+    if not valid:
+        return False
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(column_names)
+        writer.writerows(budgets)
+    return True

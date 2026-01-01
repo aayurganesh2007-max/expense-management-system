@@ -3,10 +3,10 @@ from tkinter import ttk, messagebox
 from expense_gui import clear_content
 from budget import get_all_budgets, get_all_category_budgets, get_all_payment_method_budgets, delete_budget_limit, set_update_monthly_budget, set_update_monthly_category_budget, set_update_monthly_payment_method_budget
 from constant import months, constants
-from validators import valid_year_in_database
+from validators import valid_year_month_in_database
+from analytics import export_budget_csv
 
-
-def open_budget_window(window):
+def open_budget_window(window:tk.Tk):
     '''Function to open the budget management window and operate on this window with different frames and widgets.
     args:
         window: the main window
@@ -40,20 +40,10 @@ def open_budget_window(window):
     view_budgets_btn = tk.Button(budget_frame, text="View Budgets", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_ui(budget_content_frame))
     view_budgets_btn.grid(row=3, column=0, pady=(10,0))
 
-    def export_budgets():
-        '''Function to export budgets from the database by creating a new frame in the same window when called.
-        args:
-            None
-        returns:
-            None'''
-        pass
-    export_budgets_btn = tk.Button(budget_frame, text="Export Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=export_budgets)
-    export_budgets_btn.grid(row=4, column=0, pady=(10,0))
-
     budget_destroy_btn = tk.Button(budget_frame, text="Close", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=new_budget_window.destroy)
     budget_destroy_btn.grid(row=6, column=0, pady=(10,0))
 
-def new_budget_ui(budget_content_frame):
+def new_budget_ui(budget_content_frame:tk.Frame):
     '''Function to add a new budget to the database by creating a new frame in the same window
           when called after clearing all three existing frames in the same window.
           It also resizes appropriately according to the window size
@@ -80,7 +70,7 @@ def new_budget_ui(budget_content_frame):
     new_budget_payment_method_btn = tk.Button(new_budget_frame, text="Set Monthly Payment Method Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command= lambda:new_budget_payment_method(new_budget_frame))
     new_budget_payment_method_btn.grid(row=3, column=0, pady=(20,0))
 
-def new_budget_monthly(new_budget_frame):
+def new_budget_monthly(new_budget_frame:tk.Frame):
     '''Function to add a new budget to the database by creating a new frame in the same window.
         It also resizes appropriately according to the window size
         it provides a combobox to select the month (in text)and a text entry to enter the budget limit.
@@ -146,7 +136,7 @@ def new_budget_monthly(new_budget_frame):
     new_budget_monthly_save_btn = tk.Button(new_budget_monthly_frame, text="Save Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=submit_new_budget_monthly)
     new_budget_monthly_save_btn.grid(row=7, column=0, pady=(20,0))
 
-def new_budget_category(new_budget_frame):
+def new_budget_category(new_budget_frame:tk.Frame):
     '''Function to add a new budget to the database by creating a new frame in the same window.
         It also resizes appropriately according to the window size
         it provides a combobox to select the month (in text)and a text entry to enter the budget limit.
@@ -220,7 +210,7 @@ def new_budget_category(new_budget_frame):
     new_budget_category_save_btn.grid(row=9, column=0, pady=(20,0))
 
 
-def new_budget_payment_method(new_budget_frame):
+def new_budget_payment_method(new_budget_frame:tk.Frame):
     '''Function to add a new budget to the database by creating a new frame in the same window.
         It also resizes appropriately according to the window size
         it provides a combobox to select the month (in text)and a text entry to enter the budget limit.
@@ -292,7 +282,7 @@ def new_budget_payment_method(new_budget_frame):
     new_budget_payment_method_save_btn = tk.Button(new_budget_payment_method_frame, text="Save Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=submit_new_budget_payment_method)
     new_budget_payment_method_save_btn.grid(row=9, column=0, pady=(20,0))
 
-def delete_budget_ui(budget_content_frame):
+def delete_budget_ui(budget_content_frame:tk.Frame):
     '''Function to delete a budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.
     args:
@@ -315,7 +305,7 @@ def delete_budget_ui(budget_content_frame):
     delete_budget_payment_method_btn = tk.Button(delete_budget_frame, text="Delete Monthly \nPayment Method Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: delete_budget_payment_method_ui(delete_budget_frame))
     delete_budget_payment_method_btn.grid(row=6, column=0, pady=(20,0))
 
-def delete_budget_monthly_ui(delete_budget_frame):
+def delete_budget_monthly_ui(delete_budget_frame:tk.Frame):
     '''Function to delete a monthly budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.
     args:
@@ -365,7 +355,7 @@ def delete_budget_monthly_ui(delete_budget_frame):
     delete_budget_monthly_save_btn = tk.Button(delete_budget_monthly_frame, text="Delete Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=submit_delete_budget_monthly)
     delete_budget_monthly_save_btn.grid(row=5, column=0, pady=(20,0))
 
-def delete_budget_category_ui(delete_budget_frame):
+def delete_budget_category_ui(delete_budget_frame:tk.Frame):
     '''Function to delete a monthly category budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.
     args:
@@ -425,7 +415,7 @@ def delete_budget_category_ui(delete_budget_frame):
     delete_budget_category_save_btn = tk.Button(delete_budget_category_frame, text="Delete Budget", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=submit_delete_budget_category)
     delete_budget_category_save_btn.grid(row=7, column=0, pady=(20,0))
 
-def delete_budget_payment_method_ui(delete_budget_frame):
+def delete_budget_payment_method_ui(delete_budget_frame:tk.Frame):
     '''Function to delete a monthly payment method budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.
     args:
@@ -484,7 +474,7 @@ def delete_budget_payment_method_ui(delete_budget_frame):
     delete_budget_payment_method_save_btn = tk.Button(delete_budget_payment_method_frame, text="Delete Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=submit_delete_budget_payment_method)
     delete_budget_payment_method_save_btn.grid(row=7, column=0, pady=(20,0))
 
-def update_budget_ui(budget_content_frame):
+def update_budget_ui(budget_content_frame:tk.Frame):
     '''Function to update an existing budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.it also resizes appropriately according to the window size
     args:
@@ -508,7 +498,7 @@ def update_budget_ui(budget_content_frame):
     update_budget_payment_method_btn = tk.Button(update_budget_frame, text="Update Monthly Payment Method Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command= lambda:update_budget_payment_method(update_budget_frame))
     update_budget_payment_method_btn.grid(row=4, column=0, pady=(20,0))
 
-def update_budget_monthly(update_budget_frame):
+def update_budget_monthly(update_budget_frame:tk.Frame):
     '''Function to update an existing budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.it also resizes appropriately according to the window size
     args:
@@ -555,7 +545,7 @@ def update_budget_monthly(update_budget_frame):
         for month, value in months.items():
             if value == update_budget_monthly_month_combobox.get():
                 break
-        if not valid_year_in_database(year, month, "monthly_budget"):
+        if not valid_year_month_in_database(year, month,"budget.db","monthly_budget"):
             tk.messagebox.showerror("Error", "Invalid year and month. Please enter a valid year and month.")
             return
         
@@ -575,7 +565,7 @@ def update_budget_monthly(update_budget_frame):
     update_budget_monthly_save_btn = tk.Button(update_budget_monthly_frame, text="Update Budget", font=("Arial", 20, "bold"), bg="#61cc0a", fg="black", bd=6, relief="raised", justify="center", command=submit_update_budget_monthly)
     update_budget_monthly_save_btn.grid(row=7, column=0, pady=(10,0))
 
-def update_budget_category(update_budget_frame):
+def update_budget_category(update_budget_frame:tk.Frame):
     '''Function to update an existing budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.it also resizes appropriately according to the window size
     args:
@@ -627,7 +617,7 @@ def update_budget_category(update_budget_frame):
         for month, value in months.items():
             if value == update_budget_category_month_combobox.get():
                 break
-        if not valid_year_in_database(year, month, "monthly_category_budget"):
+        if not valid_year_month_in_database(year, month,"budget.db","monthly_category_budget"):
             tk.messagebox.showerror("Error", "Invalid year and month. Please enter a valid year and month.")
             return
         try:
@@ -648,7 +638,7 @@ def update_budget_category(update_budget_frame):
     update_budget_category_save_btn = tk.Button(update_budget_category_frame, text="Update Budget", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=submit_update_budget_category)
     update_budget_category_save_btn.grid(row=9, column=0, pady=(10,0))
 
-def update_budget_payment_method(update_budget_frame):
+def update_budget_payment_method(update_budget_frame:tk.Frame):
     '''Function to update an existing budget from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.it also resizes appropriately according to the window size
     args:
@@ -700,7 +690,7 @@ def update_budget_payment_method(update_budget_frame):
         for month, value in months.items():
             if value == update_budget_payment_method_month_combobox.get():
                 break
-        if not valid_year_in_database(year, month, "monthly_payment_method_budget"):
+        if not valid_year_month_in_database(year, month,"budget.db","monthly_payment_method_budget"):
             tk.messagebox.showerror("Error", "Invalid year and month. Please enter a valid year and month.")
             return
         try:
@@ -721,7 +711,7 @@ def update_budget_payment_method(update_budget_frame):
     update_budget_payment_method_save_btn = tk.Button(update_budget_payment_method_frame, text="Update Budget", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=submit_update_budget_payment_method)
     update_budget_payment_method_save_btn.grid(row=9, column=0, pady=(10,0))
 
-def view_budgets_ui(budget_content_frame):
+def view_budgets_ui(budget_content_frame:tk.Frame):
     '''creates a new frame for viewing the budgets from the database by creating a new frame in the same window when called, 
     after clearing all the existing frames.
     calls three seperate functions to fetch the budgets from the database and display them in the treeview, through buttons
@@ -737,23 +727,25 @@ def view_budgets_ui(budget_content_frame):
     view_budgets_lbl = tk.Label(view_budgets_frame, text="View Budgets", font=("Arial", 36, "bold"), bg="#ebd409", fg="Black", bd = 5, relief="ridge", justify="center")
     view_budgets_lbl.grid(row=0, column=0,pady=(10,0))
     
-    view_budgets_monthly_btn = tk.Button(view_budgets_frame, text="View Monthly Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_monthly_ui(view_budgets_frame))
+    view_budgets_monthly_btn = tk.Button(view_budgets_frame, text="View Monthly Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_monthly_ui(view_budgets_frame,"budgets_monthly.csv"))
     view_budgets_monthly_btn.grid(row=1, column=0, pady=(20,0))
 
-    view_budgets_category_btn = tk.Button(view_budgets_frame, text="View Monthly Category Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_category_ui(view_budgets_frame))
+    view_budgets_category_btn = tk.Button(view_budgets_frame, text="View Monthly Category Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_category_ui(view_budgets_frame,"budgets_category.csv"))
     view_budgets_category_btn.grid(row=2, column=0, pady=(20,0))
 
-    view_budgets_payment_method_btn = tk.Button(view_budgets_frame, text="View Monthly \nPayment Method Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_payment_method_ui(view_budgets_frame))
+    view_budgets_payment_method_btn = tk.Button(view_budgets_frame, text="View Monthly \nPayment Method Budgets", font=("Arial", 20, "bold"), bg="#1aab0a", fg="black", bd=6, relief="raised", justify="center", command=lambda: view_budgets_payment_method_ui(view_budgets_frame,"budgets_payment_method.csv"))
     view_budgets_payment_method_btn.grid(row=3, column=0, pady=(20,0))
 
-def view_budgets_monthly_ui(view_budgets_frame):
+def view_budgets_monthly_ui(view_budgets_frame:tk.Frame,file_name:str):
     '''displays the monthly budgets from the database in a treeview
     the column headers are id,year, month, amount_limit.
     the data is in the form of list of tuples where each tuple is a record
     displays each record in a seperate line under the respective header columns
     The frame contains both horizontal and vertical scrollbars and resizes appropriately according to the window size
+    It also provides a button to export the budgets to a csv file,and returns a message box if the operation is successful or not.
     args:
         view_budgets_frame: The frame where the view budgets frame will be created.
+        file_name: the name of the file to export the budgets to.
     returns:
         None'''
     clear_content(view_budgets_frame)
@@ -786,14 +778,35 @@ def view_budgets_monthly_ui(view_budgets_frame):
     view_budgets_monthly_frame.grid_rowconfigure(0, weight=1)
     view_budgets_monthly_frame.grid_columnconfigure(0, weight=1)
 
-def view_budgets_category_ui(view_budgets_frame):
+    export_budgets_btn = tk.Button(view_budgets_monthly_frame, text="Export Budgets", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=lambda: export_budget_csv_ui())
+    export_budgets_btn.grid(row=2, column=0, pady=(20,0))
+
+    def export_budget_csv_ui():
+        '''Function to export budgets from the database by creating a new frame in the same window when called.
+        also checks if the write operation is successful or not.And returns a message box if the operation is successful or not.
+        args:
+            None
+        returns:
+            None'''
+        col_names = ["id","year", "month", "amount_limit"]
+        valid = export_budget_csv(file_name,get_all_budgets(),col_names)
+        if valid:
+            messagebox.showinfo("Success", "Budgets exported successfully.")
+            view_budgets_monthly_frame.destroy()
+        else:
+            messagebox.showerror("Error", "Failed to export budgets.")
+            view_budgets_monthly_frame.destroy()
+
+def view_budgets_category_ui(view_budgets_frame:tk.Frame,file_name:str):
     '''displays the monthly category budgets from the database in a treeview
     the column headers are id,year, month, category, amount_limit.
     the data is in the form of list of tuples where each tuple is a record
     displays each record in a seperate line under the respective header columns
     The frame contains both horizontal and vertical scrollbars and resizes appropriately according to the window size
+    It also provides a button to export the budgets to a csv file,and returns a message box if the operation is successful or not.
     args:
         view_budgets_frame: The frame where the view budgets frame will be created.
+        file_name: the name of the file to export the budgets to.
     returns:
         None'''
     clear_content(view_budgets_frame)
@@ -825,8 +838,26 @@ def view_budgets_category_ui(view_budgets_frame):
     tree.grid(row=0, column=0, sticky="nsew")
     view_budgets_category_frame.grid_rowconfigure(0, weight=1)
     view_budgets_category_frame.grid_columnconfigure(0, weight=1)
+    #create a button to export the budgets to a csv file
+    export_budgets_btn = tk.Button(view_budgets_category_frame, text="Export Budgets", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=lambda: export_budget_csv_ui())
+    export_budgets_btn.grid(row=2, column=0, pady=(20,0))
+    def export_budget_csv_ui():
+        '''Function to export budgets from the database by creating a new frame in the same window when called.
+        also checks if the write operation is successful or not.And returns a message box if the operation is successful or not.
+        args:
+            None
+        returns:
+            None'''
+        col_names = ["id","year", "month", "category", "amount_limit"]
+        valid = export_budget_csv(file_name,get_all_category_budgets(),col_names)
+        if valid:
+            messagebox.showinfo("Success", "Budgets exported successfully.")
+            view_budgets_category_frame.destroy()
+        else:
+            messagebox.showerror("Error", "Failed to export budgets.")
+            view_budgets_category_frame.destroy()
 
-def view_budgets_payment_method_ui(view_budgets_frame):
+def view_budgets_payment_method_ui(view_budgets_frame:tk.Frame,file_name:str):
     '''displays the monthly payment method budgets from the database in a treeview
     the column headers are id,year, month, payment_method, amount_limit.
     the data is in the form of list of tuples where each tuple is a record
@@ -834,6 +865,7 @@ def view_budgets_payment_method_ui(view_budgets_frame):
     The frame contains both horizontal and vertical scrollbars and resizes appropriately according to the window size
     args:
         view_budgets_frame: The frame where the view budgets frame will be created.
+        file_name: the name of the file to export the budgets to.
     returns:
         None'''
     #clear existing frames before opening the view budgets frame
@@ -866,4 +898,22 @@ def view_budgets_payment_method_ui(view_budgets_frame):
     tree.grid(row=0, column=0, sticky="nsew")
     view_budgets_payment_method_frame.grid_rowconfigure(0, weight=1)        
     view_budgets_payment_method_frame.grid_columnconfigure(0, weight=1)
+    #create a button to export the budgets to a csv file
+    export_budgets_btn = tk.Button(view_budgets_payment_method_frame, text="Export Budgets", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=lambda: export_budget_csv_ui())
+    export_budgets_btn.grid(row=2, column=0, pady=(20,0))
+    def export_budget_csv_ui():
+        '''Function to export budgets from the database by creating a new frame in the same window when called.
+        also checks if the write operation is successful or not.And returns a message box if the operation is successful or not.
+        args:
+            None
+        returns:
+            None'''
+        col_names = ["id","year", "month", "payment_method", "amount_limit"]
+        valid = export_budget_csv(file_name,get_all_payment_method_budgets(),col_names)
+        if valid:
+            messagebox.showinfo("Success", "Budgets exported successfully.")
+            view_budgets_payment_method_frame.destroy()
+        else:
+            messagebox.showerror("Error", "Failed to export budgets.")            
+            view_budgets_payment_method_frame.destroy()
 
