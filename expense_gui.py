@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+import os
+from tkinter import ttk, messagebox, filedialog
 from tkcalendar import  DateEntry
 from constant import constants
 from expense import add_expense, delete_expense , update_expense,view_expenses, search_expenses, get_expense_by_id
@@ -285,6 +286,17 @@ def update_expense_ui(expense_content_frame:tk.Frame):
         update_expense_save_btn = tk.Button(update_expense_frame, text="Update Expense", font=("Arial", 20, "bold"), bg="#0ae2d0", fg="black", bd=6, relief="raised", justify="center", command=submit_update_expense)
         update_expense_save_btn.grid(row=16, column=0, pady=(2,0))
 
+def save_file_dialogue(file_name:str):
+    ''' This function opens a file dialogue to allow the user to decide the file path and file name, 
+    with a default file name as the one provided in the function argument. 
+    The user can also change the file name and path in the dialogue box
+    args:
+        file_name (str): The default file name to be used in the dialogue box.
+    returns:
+        str: The file path and file name selected by the user.'''
+    file_path = filedialog.asksaveasfilename(initialdir=os.getcwd(), initialfile=file_name, title="Save File", filetypes=(("csv files", "*.csv"),("All files", "*.*")))
+    return file_path
+
 def view_expenses_ui(view_expense_tuple:tuple, expense_content_frame:tk.Frame,file_name:str):
     '''Function to view all expenses from the database by creating a new frame in the same window when called.
     it uses ttk.Treeview to display the expenses in a tabular format with scrollbars.
@@ -337,15 +349,15 @@ def view_expenses_ui(view_expense_tuple:tuple, expense_content_frame:tk.Frame,fi
             None
         returns:
             None'''
-        valid = export_expense_csv(file_name,view_expense_tuple)
+        # opens a file dialogue to allow the user to decide the file path and file name, with a default file name as the one provided in the function argument.
+        file_path = save_file_dialogue(file_name)
+        if not file_path:
+            return
+        valid = export_expense_csv(file_path,view_expense_tuple)
         if valid:
             messagebox.showinfo("Success", "Expenses exported successfully.")
-            view_expenses_frame.destroy()
         else:
             messagebox.showerror("Error", "Failed to export expenses.")
-            view_expenses_frame.destroy()
-
-
 
 def search_expenses_ui(expense_content_frame:tk.Frame):
     '''Function to search expenses from the database by creating a new frame in the same window when called.
@@ -353,6 +365,8 @@ def search_expenses_ui(expense_content_frame:tk.Frame):
         expense_content_frame: The frame where the search expenses frame will be created.
     returns:
         None'''
+    #clearing all the existing frames before opening the search by expense ID frame
+    clear_content(expense_content_frame)
     search_expense_frame = tk.Frame(expense_content_frame, padx=10, pady=10, bg="#c01010")
     search_expense_frame.grid(row=0, column=0, sticky="nsew")
     search_expense_frame.grid_columnconfigure(0, weight=1)

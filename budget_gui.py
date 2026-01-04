@@ -1,6 +1,7 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from expense_gui import clear_content
+import os
+from tkinter import ttk, messagebox,filedialog
+from expense_gui import clear_content, save_file_dialogue
 from budget import get_all_budgets, get_all_category_budgets, get_all_payment_method_budgets, delete_budget_limit, set_update_monthly_budget, set_update_monthly_category_budget, set_update_monthly_payment_method_budget
 from constant import months, constants
 from validators import valid_year_month_in_database
@@ -789,7 +790,10 @@ def view_budgets_monthly_ui(view_budgets_frame:tk.Frame,file_name:str):
         returns:
             None'''
         col_names = ["id","year", "month", "amount_limit"]
-        valid = export_budget_csv(file_name,get_all_budgets(),col_names)
+        file_path = save_file_dialogue(file_name)
+        if not file_path:
+            return
+        valid = export_budget_csv(file_path,get_all_budgets(),col_names)
         if valid:
             messagebox.showinfo("Success", "Budgets exported successfully.")
             view_budgets_monthly_frame.destroy()
@@ -849,7 +853,11 @@ def view_budgets_category_ui(view_budgets_frame:tk.Frame,file_name:str):
         returns:
             None'''
         col_names = ["id","year", "month", "category", "amount_limit"]
-        valid = export_budget_csv(file_name,get_all_category_budgets(),col_names)
+        # opens a file dialogue to allow the user to decide the file path and file name, with a default file name as the one provided in the function argument.
+        file_path = save_file_dialogue(file_name)
+        if not file_path:
+            return
+        valid = export_budget_csv(file_path,get_all_category_budgets(),col_names)
         if valid:
             messagebox.showinfo("Success", "Budgets exported successfully.")
             view_budgets_category_frame.destroy()
@@ -908,8 +916,13 @@ def view_budgets_payment_method_ui(view_budgets_frame:tk.Frame,file_name:str):
             None
         returns:
             None'''
+        # opens a file dialogue to allow the user to decide the file path and file name, with a default file name as the one provided in the function argument.
+    
         col_names = ["id","year", "month", "payment_method", "amount_limit"]
-        valid = export_budget_csv(file_name,get_all_payment_method_budgets(),col_names)
+        file_path = save_file_dialogue(file_name)
+        if not file_path:
+            return
+        valid = export_budget_csv(file_path,get_all_payment_method_budgets(),col_names)
         if valid:
             messagebox.showinfo("Success", "Budgets exported successfully.")
             view_budgets_payment_method_frame.destroy()
