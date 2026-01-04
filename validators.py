@@ -20,18 +20,25 @@ def validate_date(date:str) -> bool:
         returns: True if valid else False'''
         try:
             year, month, day = map(int, date.split('-'))
-            assert 1 <= month <= 12
-            assert 1 <= day <= 31
+            if year < 0:
+                raise ValueError("Invalid year. Year must be a positive integer.")
+            if not (1 <= month <= 12):
+                raise ValueError("Invalid month. Month must be an integer between 1 and 12.")
+            if not (1 <= day <= 31):
+                raise ValueError("Invalid day. Day must be an integer between 1 and 31.")
             if month == 2:
                 if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0):
-                    assert day <= 29
-                else:
-                    assert day <= 28 
+                    if not (1 <= day <= 29):
+                        raise ValueError("Invalid day. Day must be an integer between 1 and 29.")
+                else: 
+                    if not (1 <= day <= 28):
+                        raise ValueError("Invalid day. Day must be an integer between 1 and 28.")
             elif month in [4, 6, 9, 11]:
-                assert day <= 30       
+                if not (1 <= day <= 30):       
+                    raise ValueError("Invalid day. Day must be an integer between 1 and 30.")
             return True
-        except (ValueError, AssertionError):
-            return False        
+        except ValueError:
+            return False
 
 def validate_category(category:str) -> bool:
         '''Validates if the category is one of the predefined categories 

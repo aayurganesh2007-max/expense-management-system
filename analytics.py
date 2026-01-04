@@ -81,22 +81,16 @@ def refresh_monthly_payment_method_budget_dfs():
     global monthly_payment_method_budget_pd_df
     monthly_payment_method_budget_pd_df = fetch_budget_data('budget.db', 'monthly_payment_method_budget')
 
-"""
-print(refresh_expense_df())
-
-print(refresh_monthly_budget_dfs())
-print(refresh_monthly_category_budget_dfs())
-print(refresh_monthly_payment_method_budget_dfs())"""
-
 def get_each_monthly_expense_year_df(year:int) -> tuple:
     ''' Retrieves total expenses for each month in a given year  and also the maximum spending month.
     args:
         year (int): The year for which to retrieve monthly expenses.
     returns:
-        tuple: A tuple containing a DataFrame with months and their corresponding total expenses,
-               and a dictionary with the maximum spending month and amount.'''
-    #to create a var
+        tuple: A tuple containing a boolean indicating success or failure, and a DataFrame with months and their corresponding total expenses, 
+               and a dictionary with the maximum spending month and amount or an error message.'''
     refresh_expense_df()
+    if expense_pd_df.empty:
+        return (False, "No expenses found.")
     # select rows for the year and copy to avoid SettingWithCopyWarning
     df_year = expense_pd_df[expense_pd_df['date'].dt.year == year].copy()
     # extract month number
@@ -115,7 +109,7 @@ def get_each_monthly_expense_year_df(year:int) -> tuple:
     # find maximum spending month
     max_month = monthly_expenses.loc[monthly_expenses['amount'].idxmax()]
     max_spending = {'month': max_month['month'], 'amount': float(max_month['amount'])}
-    return (monthly_expenses, max_spending)
+    return (True,(monthly_expenses, max_spending))
 
 def get_daily_expense_month_year_df(year:int, month:int) -> tuple:
     ''' Retrieves total expenses for each day in a given month 
@@ -124,9 +118,11 @@ def get_daily_expense_month_year_df(year:int, month:int) -> tuple:
         year (int): The year for which to retrieve daily expenses.
         month (int): The month for which to retrieve daily expenses.
     returns:
-        tuple: A tuple containing a DataFrame with days and their corresponding total expenses,
-               and a dictionary with the maximum spending day and amount.'''
+        tuple: A tuple containing a boolean indicating success or failure, and a DataFrame with days and their corresponding total expenses, 
+               and a dictionary with the maximum spending day and amount or an error message.'''
     refresh_expense_df()
+    if expense_pd_df.empty:
+        return (False, "No expenses found.")
     # format month to two digits
     month_str = f"{month:02d}"
     # select rows for the specified year and month
@@ -148,7 +144,7 @@ def get_daily_expense_month_year_df(year:int, month:int) -> tuple:
     # find maximum spending day
     max_day = daily_expenses.loc[daily_expenses['amount'].idxmax()]
     max_spending = {'day': int(max_day['day']), 'amount': float(max_day['amount'])}
-    return (daily_expenses, max_spending) 
+    return (True,(daily_expenses, max_spending))
 
 def get_category_expense_month_year_df(year:int, month:int) -> tuple:
     ''' Retrieves total expenses for each category in a given month  and also the maximum spent category.
@@ -156,9 +152,11 @@ def get_category_expense_month_year_df(year:int, month:int) -> tuple:
         year (int): The year for which to retrieve category expenses.
         month (int): The month for which to retrieve category expenses.
     returns:
-        tuple : A DataFrame with categories and their corresponding total expenses,
-                and a dictionary with the maximum spent category and amount.'''
+        tuple : A tuple containing a boolean indicating success or failure, and a DataFrame with categories and their corresponding total expenses, 
+                and a dictionary with the maximum spent category and amount or an error message.'''
     refresh_expense_df()
+    if expense_pd_df.empty:
+        return (False, "No expenses found.")
     # format month to two digits
     month_str = f"{month:02d}"
     # select rows for the specified year and month
@@ -175,7 +173,7 @@ def get_category_expense_month_year_df(year:int, month:int) -> tuple:
     # find maximum spent category
     max_category = category_expenses.loc[category_expenses['amount'].idxmax()]
     max_spending = {'category': max_category['category'], 'amount': float(max_category['amount'])}
-    return (category_expenses, max_spending)
+    return (True,(category_expenses, max_spending))
 
 def get_payment_method_expense_month_year_df(year:int, month:int) -> tuple:
     ''' Retrieves total expenses for each payment method in a given month after  and the maximum spent payment method.
@@ -183,9 +181,11 @@ def get_payment_method_expense_month_year_df(year:int, month:int) -> tuple:
         year (int): The year for which to retrieve payment method expenses.
         month (int): The month for which to retrieve payment method expenses.
     returns:
-        tuple: A DataFrame with payment methods and their corresponding total expenses,
-                and a dictionary with the maximum spent payment method and amount.'''
+        tuple: A tuple containing a boolean indicating success or failure, and a DataFrame with payment methods and their corresponding total expenses, 
+                and a dictionary with the maximum spent payment method and amount or an error message.'''
     refresh_expense_df()
+    if expense_pd_df.empty:
+        return (False, "No expenses found.")
     # format month to two digits
     month_str = f"{month:02d}"
     # select rows for the specified year and month
@@ -201,16 +201,18 @@ def get_payment_method_expense_month_year_df(year:int, month:int) -> tuple:
     # find maximum spent payment method
     max_payment_method = payment_method_expenses.loc[payment_method_expenses['amount'].idxmax()]
     max_spending = {'payment_method': max_payment_method['payment_method'], 'amount': float(max_payment_method['amount'])}
-    return (payment_method_expenses, max_spending)
+    return (True,(payment_method_expenses, max_spending))
 
 def get_each_monthly_budget_year_df(year:int) -> tuple:
     ''' retrieves monthly budget limits for each month in a given year and also the maximum budget month.
     args:
         year (int): The year for which to retrieve monthly budgets.
     returns:
-        tuple: A DataFrame with months and their corresponding budget limits,
-               and a dictionary with the maximum budget month and amount.'''
+        tuple: A tuple containing a boolean indicating success or failure, and a DataFrame with months and their corresponding budget limits, 
+               and a dictionary with the maximum budget month and amount or an error message.'''
     refresh_monthly_budget_dfs()
+    if monthly_budget_pd_df.empty:
+        return (False, "No budgets found.")
     # select rows for the year
     df_year = monthly_budget_pd_df[monthly_budget_pd_df['year'] == year].copy()
     # ensure all 12 months present (1..12) with zeros for missing months
@@ -225,7 +227,7 @@ def get_each_monthly_budget_year_df(year:int) -> tuple:
     # find maximum budget month
     max_month = monthly.loc[monthly['amount_limit'].idxmax()]
     max_budget = {'month': str(max_month['month']), 'amount': float(max_month['amount_limit'])}
-    return (monthly, max_budget)
+    return (True,(monthly, max_budget))
 
 def get_category_monthly_budget_year_df(year:int, month:int) -> tuple:
     ''' retrieves category-wise budget limits for a given month and also the maximum budget category.
@@ -233,8 +235,10 @@ def get_category_monthly_budget_year_df(year:int, month:int) -> tuple:
         year (int): The year for which to retrieve category budgets.
         month (int): The month for which to retrieve category budgets.
     returns:
-        tuple: A DataFrame with categories and their corresponding budget limits,
-               and a dictionary with the maximum budget category and amount.'''
+        tuple: A tuple containing a boolean indicating success or failure, and a DataFrame with categories and their corresponding budget limits, 
+               and a dictionary with the maximum budget category and amount or an error message.'''
+    if monthly_category_budget_pd_df.empty:
+        return (False, "No budgets found.")
     refresh_monthly_category_budget_dfs()
     # select rows for the specified year and month
     df_month = monthly_category_budget_pd_df[(monthly_category_budget_pd_df['year'] == year) & (monthly_category_budget_pd_df['month'] == month)].copy()
@@ -247,7 +251,7 @@ def get_category_monthly_budget_year_df(year:int, month:int) -> tuple:
     # find maximum budget category
     max_category = category_budgets.loc[category_budgets['amount_limit'].idxmax()]
     max_budget = {'category': max_category['category'], 'amount': float(max_category['amount_limit'])}
-    return (category_budgets, max_budget)
+    return (True,(category_budgets, max_budget))
 
 def get_payment_method_monthly_budget_year_df(year:int, month:int) -> tuple:
     ''' retrieves payment method-wise budget limits for a given month and also the maximum budget payment method.
@@ -255,9 +259,11 @@ def get_payment_method_monthly_budget_year_df(year:int, month:int) -> tuple:
         year (int): The year for which to retrieve payment method budgets.
         month (int): The month for which to retrieve payment method budgets.
     returns:
-        tuple: A DataFrame with payment methods and their corresponding budget limits,
-               and a dictionary with the maximum budget payment method and amount.'''
+        tuple: A tuple containing a boolean indicating success or failure, and a DataFrame with payment methods and their corresponding budget limits, 
+               and a dictionary with the maximum budget payment method and amount or an error message.'''
     refresh_monthly_payment_method_budget_dfs()
+    if monthly_payment_method_budget_pd_df.empty:
+        return (False, "No budgets found.")
     # select rows for the specified year and month
     df_month = monthly_payment_method_budget_pd_df[(monthly_payment_method_budget_pd_df['year'] == year) & (monthly_payment_method_budget_pd_df['month'] == month)].copy()
     # fill missing payment methods with 0
@@ -269,7 +275,7 @@ def get_payment_method_monthly_budget_year_df(year:int, month:int) -> tuple:
     # find maximum budget payment method
     max_payment_method = payment_method_budgets.loc[payment_method_budgets['amount_limit'].idxmax()]
     max_budget = {'payment_method': max_payment_method['payment_method'], 'amount': float(max_payment_method['amount_limit'])}
-    return (payment_method_budgets, max_budget)
+    return (True,(payment_method_budgets, max_budget))
 
 def export_expense_csv(file_path:str, expense_tuple:tuple) -> bool:
     '''Exports the given expense data and writes it into a csv file according to the file path

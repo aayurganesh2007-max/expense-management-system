@@ -1,4 +1,4 @@
-from database_connections import open_database_connection, close_database_connection
+from database_connections import open_database_connection, close_database_connection, run_db_operation
 from analytics import refresh_expense_df
 import sqlite3 as sql
 object = open_database_connection("expense.db")
@@ -51,60 +51,68 @@ def add_expense(date:str, amount:float, category:str, description:str, payment_m
     payment_method: payment method of the expense from predefined methods
     approval: boolean flag to indicate if user has approved adding expense that exceeds budget
     returns: a tuple of boolean value and success or error message'''
-    #with ensures the database connection is closed after the operation
-    with open_database_connection("expense.db") as object:
-        cursor= object.cursor()
-        error_message =[]
-        if not validate_amount(amount):
-            error_message.append("Amount must be a valid number.")
-        if not date:
-            error_message.append("Date cannot be empty.")
-        if not validate_date(date):
-            error_message.append("Date must be in YYYY-MM-DD format.")
-        if not category:
-            error_message.append("Category cannot be empty.")
-        if not validate_category(category):
-            error_message.append(f"Category must be one of the following: {', '.join(constants['valid_categories'])}.")
-        if not description:
-            error_message.append("Description cannot be empty.")
-        if not payment_method:
-            error_message.append("Payment method cannot be empty.")
-        if not validate_payment_method(payment_method):  
-            error_message.append(f"Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
-        if error_message:
-            # returns both boolean value and error message and to make it more expandable for future if needed
-            return (False,"Error: " + "; ".join(error_message))
-        if not approval:
-            valid,message= notify_budget_exceeding_expense(date, amount, category, payment_method)
-            if not valid:
-                return (False,message)
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        #with ensures the database connection is closed after the operation
+        with open_database_connection("expense.db") as object:
+            cursor= object.cursor()
+            error_message =[]
+            if not validate_amount(amount):
+                error_message.append("Amount must be a valid number.")
+            if not date:
+                error_message.append("Date cannot be empty.")
+            if not validate_date(date):
+                error_message.append("Date must be in YYYY-MM-DD format.")
+            if not category:
+                error_message.append("Category cannot be empty.")
+            if not validate_category(category):
+                error_message.append(f"Category must be one of the following: {', '.join(constants['valid_categories'])}.")
+            if not description:
+                error_message.append("Description cannot be empty.")
+            if not payment_method:
+                error_message.append("Payment method cannot be empty.")
+            if not validate_payment_method(payment_method):  
+                error_message.append(f"Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
+            if error_message:
+                # returns both boolean value and error message and to make it more expandable for future if needed
+                return (False,"Error: " + "; ".join(error_message))
+            if not approval:
+                valid,message= notify_budget_exceeding_expense(date, amount, category, payment_method)
+                if not valid:
+                    return (False,message)
+                cursor.execute("INSERT INTO expenses (date, amount, category, description, payment_method) VALUES (?,?,?,?,?)", (date, amount, category, description,payment_method))
+                object.commit()
+                refresh_expense_df()
+                return (True,"Expense added successfully.")
             cursor.execute("INSERT INTO expenses (date, amount, category, description, payment_method) VALUES (?,?,?,?,?)", (date, amount, category, description,payment_method))
             object.commit()
             refresh_expense_df()
+            
             return (True,"Expense added successfully.")
-        cursor.execute("INSERT INTO expenses (date, amount, category, description, payment_method) VALUES (?,?,?,?,?)", (date, amount, category, description,payment_method))
-        object.commit()
-        refresh_expense_df()
-        
-        return (True,"Expense added successfully.")
-
+    except Exception as e:
+        return (False,str(e))
+    
 def delete_expense(expense_id:int) -> tuple:
     '''Deletes an expense record from the expenses table based on the provided expense ID.
     returns success message if deleted successfully else returns error message if the ID does not exist
     args:  
     expense_id: ID of the expense to be deleted
     returns: a tuple of boolean value and success or error message'''
-    with open_database_connection("expense.db") as object:
-        cursor= object.cursor()
-        cursor.execute("SELECT * FROM expenses WHERE expense_id=?", (expense_id,))
-        record = cursor.fetchone()
-        if record:
-            cursor.execute("DELETE FROM expenses WHERE expense_id=?", (expense_id,))
-            refresh_expense_df()
-            object.commit()
-            return (True,"Expense deleted successfully.")
-        else:
-            return (False,"Error: Expense ID does not exist.")
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("expense.db") as object:
+            cursor= object.cursor()
+            cursor.execute("SELECT * FROM expenses WHERE expense_id=?", (expense_id,))
+            record = cursor.fetchone()
+            if record:
+                cursor.execute("DELETE FROM expenses WHERE expense_id=?", (expense_id,))
+                refresh_expense_df()
+                object.commit()
+                return (True,"Expense deleted successfully.")
+            else:
+                return (False,"Error: Expense ID does not exist.")
+    except Exception as e:
+        return (False,str(e))
 
 def update_expense(expense_id:int, date:str=None, amount:float=None, category:str=None, description:str=None, payment_method:str=None,approval:bool = False) -> tuple:
     '''Updates an existing expense record in the expenses table based on the provided expense ID and new data(atleast one dat must be updated).Also checks if the input data is valid and only then updates the record.
@@ -118,71 +126,86 @@ def update_expense(expense_id:int, date:str=None, amount:float=None, category:st
     payment_method: new payment method of the expense from predefined methods
     approval: boolean flag to indicate if user has approved adding expense that exceeds budget
     returns: a tuple of boolean value and success or error message'''
-    with open_database_connection("expense.db") as object:
-        cursor= object.cursor()
-        error_message2 =[]
-        cursor.execute("SELECT * FROM expenses WHERE expense_id=?", (expense_id,))
-        record = cursor.fetchone()              
-        if not record:
-            error_message2.append("Error: Expense ID does not exist.")
-        fields_to_update = {}
-        
-        if date:
-            if not validate_date(date):
-                error_message2.append("Error: Date must be in YYYY-MM-DD format.")
-            fields_to_update['date'] = date             
-        if amount:
-            if not validate_amount(amount):
-                error_message2.append("Error: Amount must be a valid number.")
-            fields_to_update['amount'] = amount
-        if category:
-            if not validate_category(category):
-                error_message2.append(f"Error: Category must be one of the following: {', '.join(constants['valid_categories'])}.")
-            fields_to_update['category'] = category
-        if description:
-            fields_to_update['description'] = description
-        if payment_method:
-            if not validate_payment_method(payment_method):
-                error_message2.append(f"Error: Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
-            fields_to_update['payment_method'] = payment_method
-        if not fields_to_update:
-            error_message2.append("Error: At least one field must be provided for update.")
-        if error_message2:
-            return (False," ; ".join(error_message2))
-        for field, value in fields_to_update.items():
-            if not approval:
-                valid,message= notify_budget_exceeding_expense(date if field=='date' else record[1], amount if field=='amount' else record[2], category if field=='category' else record[3], payment_method if field=='payment_method' else record[5])
-                if not valid:
-                    return (False,message)
-                cursor.execute(f"UPDATE expenses SET {field}=? WHERE expense_id=?", (value, expense_id))
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("expense.db") as object:
+            cursor= object.cursor()
+            error_message2 =[]
+            cursor.execute("SELECT * FROM expenses WHERE expense_id=?", (expense_id,))
+            record = cursor.fetchone()              
+            if not record:
+                error_message2.append("Error: Expense ID does not exist.")
+            fields_to_update = {}
+            
+            if date:
+                if not validate_date(date):
+                    error_message2.append("Error: Date must be in YYYY-MM-DD format.")
+                fields_to_update['date'] = date             
+            if amount:
+                if not validate_amount(amount):
+                    error_message2.append("Error: Amount must be a valid number.")
+                fields_to_update['amount'] = amount
+            if category:
+                if not validate_category(category):
+                    error_message2.append(f"Error: Category must be one of the following: {', '.join(constants['valid_categories'])}.")
+                fields_to_update['category'] = category
+            if description:
+                fields_to_update['description'] = description
+            if payment_method:
+                if not validate_payment_method(payment_method):
+                    error_message2.append(f"Error: Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
+                fields_to_update['payment_method'] = payment_method
+            if not fields_to_update:
+                error_message2.append("Error: At least one field must be provided for update.")
+            if error_message2:
+                return (False," ; ".join(error_message2))
+            for field, value in fields_to_update.items():
+                if not approval:
+                    valid,message= notify_budget_exceeding_expense(date if field=='date' else record[1], amount if field=='amount' else record[2], category if field=='category' else record[3], payment_method if field=='payment_method' else record[5])
+                    if not valid:
+                        return (False,message)
+                    cursor.execute(f"UPDATE expenses SET {field}=? WHERE expense_id=?", (value, expense_id))
+                    object.commit()
+                cursor.execute(f"UPDATE expenses SET {field}=? WHERE expense_id=?", (value, expense_id)) 
+                refresh_expense_df()   
                 object.commit()
-            cursor.execute(f"UPDATE expenses SET {field}=? WHERE expense_id=?", (value, expense_id)) 
-            refresh_expense_df()   
-            object.commit()
-        return (True,"Expense updated successfully.")
-
+            return (True,"Expense updated successfully.")
+    except Exception as e:
+        return (False,str(e))   
+    
 def view_expenses()-> tuple:
     '''Fetches and returns all expense records from the expenses table
     args: None
     returns: a tuple of boolean value and list of expense records'''
-    with open_database_connection("expense.db") as object:
-        cursor= object.cursor()
-        cursor.execute("SELECT * FROM expenses")
-        records = cursor.fetchall()
-        return (True,records)
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("expense.db") as object:
+            cursor= object.cursor()
+            cursor.execute("SELECT * FROM expenses")
+            records = cursor.fetchall()
+            if records:
+                return (True,records)
+            else:
+                return (False,"No expenses found")
+    except Exception as e:
+        return (False,str(e))
 
 def get_expense_by_id(expense_id:int) -> tuple:
     '''Fetches and returns a specific expense record based on the provided expense ID only if the id exists
     args:  
     expense_id: ID of the expense to be fetched
     returns: a tuple of boolean value and expense record or error message'''
-    with open_database_connection("expense.db") as object:
-        cursor= object.cursor()
-        cursor.execute("SELECT * FROM expenses WHERE expense_id=?", (expense_id,))
-        record = cursor.fetchone()
-        if not record:
-            return (False,"Error: Expense ID does not exist.")
-        return (True,record)
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("expense.db") as object:
+            cursor= object.cursor()
+            cursor.execute("SELECT * FROM expenses WHERE expense_id=?", (expense_id,))
+            record = cursor.fetchone()
+            if not record:
+                return (False,"Error: Expense ID does not exist.")
+            return (True,[record])
+    except Exception as e:    
+        return (False,str(e))
 
 def search_expenses(date_range:tuple=None, category:str=None, payment_method:str=None, amount_range:tuple=None) -> tuple:
     '''Fetches and returns expense records based on search criteria like date range, category, payment method, amount range
@@ -192,27 +215,34 @@ def search_expenses(date_range:tuple=None, category:str=None, payment_method:str
     payment_method: payment method of the expense from predefined methods
     amount_range: tuple of minimum amount and maximum amount
     returns: a tuple of boolean value and list of expense records or error message'''
-    with open_database_connection("expense.db") as object:
-        cursor = object.cursor()
-        if date_range:
-            if (validate_date(date_range[0]) is False) or (validate_date(date_range[1]) is False):
-                return (False,"Error: Date must be in YYYY-MM-DD format.")
-            cursor.execute("SELECT * FROM expenses WHERE date BETWEEN ? AND ?", (date_range[0], date_range[1]))
-        elif category:
-            if not validate_category(category):
-                return (False,f"Error: Category must be one of the following: {', '.join(constants['valid_categories'])}.")
-            cursor.execute("SELECT * FROM expenses WHERE category=?", (category,))
-        elif payment_method:
-            if not validate_payment_method(payment_method):
-                return (False,f"Error: Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
-            cursor.execute("SELECT * FROM expenses WHERE payment_method=?", (payment_method,))          
-        elif amount_range:                                                    
-            if (not validate_amount(amount_range[0])) or (not validate_amount(amount_range[1])):
-                return (False,"Error: Amount must be a valid number.")
-            cursor.execute("SELECT * FROM expenses WHERE amount BETWEEN ? AND ?", (amount_range[0], amount_range[1]))
-            
-        records = cursor.fetchall()
-        return (True,records)
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("expense.db") as object:
+            cursor = object.cursor()
+            if date_range:
+                if (validate_date(date_range[0]) is False) or (validate_date(date_range[1]) is False):
+                    return (False,"Error: Date must be in YYYY-MM-DD format.")
+                cursor.execute("SELECT * FROM expenses WHERE date BETWEEN ? AND ?", (date_range[0], date_range[1]))
+            elif category:
+                if not validate_category(category):
+                    return (False,f"Error: Category must be one of the following: {', '.join(constants['valid_categories'])}.")
+                cursor.execute("SELECT * FROM expenses WHERE category=?", (category,))
+            elif payment_method:
+                if not validate_payment_method(payment_method):
+                    return (False,f"Error: Payment method must be one of the following: {', '.join(constants['valid_payment_methods'])}.")
+                cursor.execute("SELECT * FROM expenses WHERE payment_method=?", (payment_method,))          
+            elif amount_range:                                                    
+                if (not validate_amount(amount_range[0])) or (not validate_amount(amount_range[1])):
+                    return (False,"Error: Amount must be a valid number.")
+                cursor.execute("SELECT * FROM expenses WHERE amount BETWEEN ? AND ?", (amount_range[0], amount_range[1]))
+                
+            records = cursor.fetchall()
+            if records:
+                return (True,records)
+            else:    
+                return (False,"No expenses found")
+    except Exception as e:
+        return (False,str(e))   
 
 object.commit()
 close_database_connection(object)

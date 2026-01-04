@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from validators import valid_year_in_database,valid_year_month_in_database
 from constant import months
-def open_visualizations_window(window):
+def open_visualizations_window(window:tk.Tk):
     '''Function to open the visualizations management window and operate on this window with different frames and widgets.
     args:
         window: the main window
@@ -49,7 +49,10 @@ def open_visualizations_window(window):
     viz_double_bar_graph_payment_method_budget_btn = tk.Button(viz_frame, text="Double Bar Graph \nPayment Method Budget", font=("Arial", 15, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command= lambda:viz_double_bar_graph_payment_method_budget(viz_content_frame))
     viz_double_bar_graph_payment_method_budget_btn.grid(row=6, column=0, pady=(10,0))
 
-def viz_bargraph_monthly_expense(viz_content_frame):
+    viz_destroy_btn = tk.Button(viz_frame, text="Close", font=("Arial", 20, "bold"), bg="#ff0000", fg="white", bd=6, relief="raised", justify="center", command=new_viz_window.destroy)
+    viz_destroy_btn.grid(row=7, column=0, pady=(10,0))
+
+def viz_bargraph_monthly_expense(viz_content_frame:tk.Frame):
     '''Function to open the bar graph of monthly expenses from the database by creating a new frame in the same window when called.
     It takes the year form user input and displays the bar graph of monthly expenses, after validating the year exists in the database.
     args:
@@ -73,6 +76,7 @@ def viz_bargraph_monthly_expense(viz_content_frame):
     def submit_viz_bargraph_monthly_expense():
         '''Function to submit the bar graph of monthly expenses from the database when called.
         It takes the year form user input and displays the bar graph of monthly expenses, after validating the year exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -90,7 +94,10 @@ def viz_bargraph_monthly_expense(viz_content_frame):
         viz_bargraph_monthly_expense_fig_frame = tk.Frame(viz_bargraph_monthly_expense_frame, padx=10, pady=10, bg="#c01010")
         viz_bargraph_monthly_expense_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_bargraph_monthly_expense_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_bargraph_monthly_expensefig = bargraph_monthly_expense(year)
+        valid,viz_bargraph_monthly_expensefig = bargraph_monthly_expense(year)
+        if not valid:
+            messagebox.showerror("Error", viz_bargraph_monthly_expensefig)
+            return
         viz_bargraph_monthly_expensefig_canvas = FigureCanvasTkAgg(viz_bargraph_monthly_expensefig, master=viz_bargraph_monthly_expense_fig_frame)
         viz_bargraph_monthly_expensefig_canvas.draw()
         viz_bargraph_monthly_expensefig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
@@ -98,7 +105,7 @@ def viz_bargraph_monthly_expense(viz_content_frame):
     viz_bargraph_monthly_expense_diplay_btn = tk.Button(viz_bargraph_monthly_expense_frame, text="Display", font=("Arial", 20, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command=submit_viz_bargraph_monthly_expense)
     viz_bargraph_monthly_expense_diplay_btn.grid(row=3, column=0, pady=(10,0))
     
-def viz_linegraph_daily_expense(viz_content_frame):
+def viz_linegraph_daily_expense(viz_content_frame:tk.Frame):
     '''Function to open the line graph of daily expenses from the database by creating a new frame in the same window when called.
     It takes the year form user input and displays the line graph of daily expenses, after validating the year exists in the database.
     args:
@@ -129,6 +136,7 @@ def viz_linegraph_daily_expense(viz_content_frame):
     def submit_viz_linegraph_daily_expense():
         """Function to submit the line graph of daily expenses from the database when called.
         It takes the year and month form user input and displays the line graph of daily expenses, after validating the year and month exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -149,7 +157,10 @@ def viz_linegraph_daily_expense(viz_content_frame):
         viz_linegraph_daily_expense_fig_frame = tk.Frame(viz_linegraph_daily_expense_frame, padx=10, pady=10, bg="#c01010")
         viz_linegraph_daily_expense_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_linegraph_daily_expense_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_linegraph_daily_expensefig = linegraph_daily_expense(year, month)
+        valid,viz_linegraph_daily_expensefig = linegraph_daily_expense(year, month)
+        if not valid:
+            messagebox.showerror("Error", viz_linegraph_daily_expensefig)
+            return
         viz_linegraph_daily_expensefig_canvas = FigureCanvasTkAgg(viz_linegraph_daily_expensefig, master=viz_linegraph_daily_expense_fig_frame)
         viz_linegraph_daily_expensefig_canvas.draw()
         viz_linegraph_daily_expensefig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
@@ -157,7 +168,7 @@ def viz_linegraph_daily_expense(viz_content_frame):
     viz_linegraph_daily_expense_diplay_btn = tk.Button(viz_linegraph_daily_expense_frame, text="Display", font=("Arial", 20, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command=submit_viz_linegraph_daily_expense)
     viz_linegraph_daily_expense_diplay_btn.grid(row=5, column=0, pady=(10,0))
 
-def viz_piechart_category_expense(viz_content_frame):
+def viz_piechart_category_expense(viz_content_frame:tk.Frame):
     '''Function to open the pie chart of category expenses from the database by creating a new frame in the same window when called.
     It takes the year and month from user input and displays the pie chart of category expenses, after validating the year and month exists in the database.
     args:
@@ -188,6 +199,7 @@ def viz_piechart_category_expense(viz_content_frame):
     def submit_viz_piechart_category_expense():
         """Function to submit the pie chart of category expenses from the database when called.
         It takes the year and month form user input and displays the pie chart of category expenses, after validating the year and month exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -208,7 +220,10 @@ def viz_piechart_category_expense(viz_content_frame):
         viz_piechart_category_expense_fig_frame = tk.Frame(viz_piechart_category_expense_frame, padx=10, pady=10, bg="#c01010")
         viz_piechart_category_expense_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_piechart_category_expense_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_piechart_category_expensefig = piechart_category_expense(year, month)
+        valid,viz_piechart_category_expensefig = piechart_category_expense(year, month)
+        if not valid:
+            messagebox.showerror("Error", viz_piechart_category_expensefig)
+            return
         viz_piechart_category_expensefig_canvas = FigureCanvasTkAgg(viz_piechart_category_expensefig, master=viz_piechart_category_expense_fig_frame)
         viz_piechart_category_expensefig_canvas.draw()
         viz_piechart_category_expensefig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
@@ -216,7 +231,7 @@ def viz_piechart_category_expense(viz_content_frame):
     viz_piechart_category_expense_diplay_btn = tk.Button(viz_piechart_category_expense_frame, text="Display", font=("Arial", 20, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command=submit_viz_piechart_category_expense)
     viz_piechart_category_expense_diplay_btn.grid(row=5, column=0, pady=(10,0))
 
-def viz_piechart_payment_method_expense(viz_content_frame):
+def viz_piechart_payment_method_expense(viz_content_frame:tk.Frame):
     '''Function to open the pie chart of payment method expenses from the database by creating a new frame in the same window when called.
     It takes the year and month from user input and displays the pie chart of payment method expenses, after validating the year and month exists in the database.
     args:
@@ -247,6 +262,7 @@ def viz_piechart_payment_method_expense(viz_content_frame):
     def submit_viz_piechart_payment_method_expense():
         """Function to submit the pie chart of payment method expenses from the database when called.
         It takes the year and month form user input and displays the pie chart of payment method expenses, after validating the year and month exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -267,7 +283,10 @@ def viz_piechart_payment_method_expense(viz_content_frame):
         viz_piechart_payment_method_expense_fig_frame = tk.Frame(viz_piechart_payment_method_expense_frame, padx=10, pady=10, bg="#c01010")
         viz_piechart_payment_method_expense_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_piechart_payment_method_expense_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_piechart_payment_method_expensefig = piechart_payment_method_expense(year, month)
+        valid,viz_piechart_payment_method_expensefig = piechart_payment_method_expense(year, month)
+        if not valid:
+            messagebox.showerror("Error", viz_piechart_payment_method_expensefig)
+            return
         viz_piechart_payment_method_expensefig_canvas = FigureCanvasTkAgg(viz_piechart_payment_method_expensefig, master=viz_piechart_payment_method_expense_fig_frame)
         viz_piechart_payment_method_expensefig_canvas.draw()
         viz_piechart_payment_method_expensefig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
@@ -275,7 +294,7 @@ def viz_piechart_payment_method_expense(viz_content_frame):
     viz_piechart_payment_method_expense_diplay_btn = tk.Button(viz_piechart_payment_method_expense_frame, text="Display", font=("Arial", 20, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command=submit_viz_piechart_payment_method_expense)
     viz_piechart_payment_method_expense_diplay_btn.grid(row=5, column=0, pady=(10,0))
 
-def viz_double_bar_graph_monthly_budget(viz_content_frame):
+def viz_double_bar_graph_monthly_budget(viz_content_frame:tk.Frame):
     '''Function to open the double bar graph of monthly budget from the database by creating a new frame in the same window when called.
     It takes the year from user input and displays the double bar graph of monthly budget, after validating the year exists in the database.
     args:
@@ -299,6 +318,7 @@ def viz_double_bar_graph_monthly_budget(viz_content_frame):
     def submit_viz_double_bar_graph_monthly_budget():
         """Function to submit the double bar graph of monthly budget from the database when called.
         It takes the year form user input and displays the double bar graph of monthly budget, after validating the year exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -316,7 +336,10 @@ def viz_double_bar_graph_monthly_budget(viz_content_frame):
         viz_double_bar_graph_monthly_budget_fig_frame = tk.Frame(viz_double_bar_graph_monthly_budget_frame, padx=10, pady=10, bg="#c01010")
         viz_double_bar_graph_monthly_budget_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_double_bar_graph_monthly_budget_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_double_bar_graph_monthly_budgetfig = double_bar_graph_monthly_budget(year)
+        valid,viz_double_bar_graph_monthly_budgetfig = double_bar_graph_monthly_budget(year)
+        if not valid:
+            messagebox.showerror("Error", viz_double_bar_graph_monthly_budgetfig)
+            return
         viz_double_bar_graph_monthly_budgetfig_canvas = FigureCanvasTkAgg(viz_double_bar_graph_monthly_budgetfig, master=viz_double_bar_graph_monthly_budget_fig_frame)
         viz_double_bar_graph_monthly_budgetfig_canvas.draw()
         viz_double_bar_graph_monthly_budgetfig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
@@ -324,7 +347,7 @@ def viz_double_bar_graph_monthly_budget(viz_content_frame):
     viz_double_bar_graph_monthly_budget_diplay_btn = tk.Button(viz_double_bar_graph_monthly_budget_frame, text="Display", font=("Arial", 20, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command=submit_viz_double_bar_graph_monthly_budget)
     viz_double_bar_graph_monthly_budget_diplay_btn.grid(row=3, column=0, pady=(10,0))
 
-def viz_double_bar_graph_category_budget(viz_content_frame):
+def viz_double_bar_graph_category_budget(viz_content_frame:tk.Frame):
     '''Function to open the double bar graph of category budget from the database by creating a new frame in the same window when called.
     It takes the year and month from user input and displays the double bar graph of category budget, after validating the year and month exists in the database.
     args:
@@ -355,6 +378,7 @@ def viz_double_bar_graph_category_budget(viz_content_frame):
     def submit_viz_double_bar_graph_category_budget():
         """Function to submit the double bar graph of category budget from the database when called.
         It takes the year and month form user input and displays the double bar graph of category budget, after validating the year and month exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -375,7 +399,10 @@ def viz_double_bar_graph_category_budget(viz_content_frame):
         viz_double_bar_graph_category_budget_fig_frame = tk.Frame(viz_double_bar_graph_category_budget_frame, padx=10, pady=10, bg="#c01010")
         viz_double_bar_graph_category_budget_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_double_bar_graph_category_budget_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_double_bar_graph_category_budgetfig = double_bar_graph_category_budget(year,month)
+        valid,viz_double_bar_graph_category_budgetfig = double_bar_graph_category_budget(year,month)
+        if not valid:
+            messagebox.showerror("Error", viz_double_bar_graph_category_budgetfig)
+            return
         viz_double_bar_graph_category_budgetfig_canvas = FigureCanvasTkAgg(viz_double_bar_graph_category_budgetfig, master=viz_double_bar_graph_category_budget_fig_frame)
         viz_double_bar_graph_category_budgetfig_canvas.draw()
         viz_double_bar_graph_category_budgetfig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
@@ -383,7 +410,7 @@ def viz_double_bar_graph_category_budget(viz_content_frame):
     viz_double_bar_graph_category_budget_diplay_btn = tk.Button(viz_double_bar_graph_category_budget_frame, text="Display", font=("Arial", 20, "bold"), bg="#e94c0e", fg="black", bd=6, relief="raised", justify="center", command=submit_viz_double_bar_graph_category_budget)
     viz_double_bar_graph_category_budget_diplay_btn.grid(row=5, column=0, pady=(10,0))
 
-def viz_double_bar_graph_payment_method_budget(viz_content_frame):
+def viz_double_bar_graph_payment_method_budget(viz_content_frame:tk.Frame):
     '''Function to open the double bar graph of payment method budget from the database by creating a new frame in the same window when called.
     It takes the year and month from user input and displays the double bar graph of payment method budget, after validating the year and month exists in the database.
     args:
@@ -414,6 +441,7 @@ def viz_double_bar_graph_payment_method_budget(viz_content_frame):
     def submit_viz_double_bar_graph_payment_method_budget():
         """Function to submit the double bar graph of payment method budget from the database when called.
         It takes the year and month form user input and displays the double bar graph of payment method budget, after validating the year and month exists in the database.
+        It also returns a message box if the operation is unsuccessful.
         args:
             None
         returns:    
@@ -434,7 +462,10 @@ def viz_double_bar_graph_payment_method_budget(viz_content_frame):
         viz_double_bar_graph_payment_method_budget_fig_frame = tk.Frame(viz_double_bar_graph_payment_method_budget_frame, padx=10, pady=10, bg="#c01010")
         viz_double_bar_graph_payment_method_budget_fig_frame.grid(row=0, column=0, sticky="nsew")
         viz_double_bar_graph_payment_method_budget_fig_frame.grid_columnconfigure(0, weight=1)
-        viz_double_bar_graph_payment_method_budgetfig = double_bar_graph_payment_method_budget(year,month)
+        valid,viz_double_bar_graph_payment_method_budgetfig = double_bar_graph_payment_method_budget(year,month)
+        if not valid:
+            messagebox.showerror("Error", viz_double_bar_graph_payment_method_budgetfig)
+            return
         viz_double_bar_graph_payment_method_budgetfig_canvas = FigureCanvasTkAgg(viz_double_bar_graph_payment_method_budgetfig, master=viz_double_bar_graph_payment_method_budget_fig_frame)
         viz_double_bar_graph_payment_method_budgetfig_canvas.draw()
         viz_double_bar_graph_payment_method_budgetfig_canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")

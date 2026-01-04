@@ -3,15 +3,17 @@ import numpy as np
 from analytics import get_each_monthly_expense_year_df,get_daily_expense_month_year_df, get_category_expense_month_year_df,get_payment_method_expense_month_year_df,get_each_monthly_budget_year_df,get_category_monthly_budget_year_df,get_payment_method_monthly_budget_year_df
 from constant import months
 from matplotlib.figure import Figure
-def bargraph_monthly_expense(year:int) -> Figure:
+def bargraph_monthly_expense(year:int) -> tuple:
     ''' generates a bar graph of the monthly expense of each month for a given year and 
     also displays the maximum spending month and amount.
     args: 
         year (int): The year for which to generate the bar graph.
     returns: 
-        fig (Figure): A figure object containing the bar graph.
-        '''
-    monthly_expenses, max_spending = get_each_monthly_expense_year_df(year)
+        tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the bar graph.'''
+    valid,data_tuple = get_each_monthly_expense_year_df(year)
+    if not valid:
+        return (False,data_tuple)
+    monthly_expenses, max_spending = data_tuple
     fig=plt.Figure(figsize=(9, 5), dpi=100) # set the size of the figure and create a figure object
     ax = fig.add_subplot(111)
     ax.bar(monthly_expenses['month'], monthly_expenses['amount'],color="#9c0909",width=0.6,edgecolor='black',linewidth=1.5)
@@ -27,18 +29,20 @@ def bargraph_monthly_expense(year:int) -> Figure:
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->", linewidth=1.2),
     fontsize=9)
-    return fig
+    return (fig,True)
 
-def linegraph_daily_expense(year:int, month:int) -> Figure:
+def linegraph_daily_expense(year:int, month:int) -> tuple:
     ''' Generates a line graph of the daily expenses of a given month and year
     and also displays the maximum spending day and amount.
     args:
         year (int): The year for which to generate the line graph.
         month (int): The month for which to generate the line graph.
     returns:
-        fig (Figure): A figure object containing the line graph.
-    '''
-    daily_expenses, max_spending = get_daily_expense_month_year_df(year, month)
+       tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the line graph.'''
+    valid,data_tuple = get_daily_expense_month_year_df(year, month)
+    if not valid:
+        return (False,data_tuple)
+    daily_expenses, max_spending = data_tuple
     fig=plt.Figure(figsize=(9, 5), dpi=100) # set the size of the figure and create a figure object
     ax = fig.add_subplot(111)
     ax.plot(daily_expenses['day'], daily_expenses['amount'],marker='o',markersize=5,markerfacecolor="#E8C813",markeredgecolor='black',markeredgewidth=1.5,linestyle='solid',color="#f53f07",linewidth=1.7)
@@ -55,20 +59,20 @@ def linegraph_daily_expense(year:int, month:int) -> Figure:
     textcoords="offset points",
     arrowprops=dict(arrowstyle="->", linewidth=1.2),
     fontsize=9)
+    return (fig,True)
 
-    return fig
-
-
-def piechart_category_expense(year:int, month:int) -> Figure:
+def piechart_category_expense(year:int, month:int) -> tuple:
     ''' Generates a pie chart of the category expenses of a given month and year
     also  highlights the max spending category in the pie by explode
     args:
         year (int): The year for which to generate the pie chart.
         month (int): The month for which to generate the pie chart.
     returns:
-        fig (Figure): A figure object containing the pie chart.
-    '''
-    category_expenses, max_spending = get_category_expense_month_year_df(year, month)
+        tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the pie chart.'''
+    valid,data_tuple = get_category_expense_month_year_df(year, month)
+    if not valid:
+        return (False,data_tuple)
+    category_expenses, max_spending = data_tuple
     fig = plt.Figure(figsize=(7, 7), dpi=100) # set the size of the figure and create a figure object
     ax = fig.add_subplot(111)
     category_expenses = category_expenses.sort_values(by='amount', ascending=False)
@@ -79,15 +83,18 @@ def piechart_category_expense(year:int, month:int) -> Figure:
     fig.tight_layout()
     return fig
     
-def piechart_payment_method_expense(year:int, month:int) -> Figure:
+def piechart_payment_method_expense(year:int, month:int) -> tuple:
     ''' Generates a pie chart of the payment method expenses of a given month and year
     also  highlights the max spending payment method in the pie by explode
     args:
         year (int): The year for which to generate the pie chart.
         month (int): The month for which to generate the pie chart.
     returns:
-        fig (Figure): A figure object containing the pie chart.'''
-    payment_method_expenses, max_spending = get_payment_method_expense_month_year_df(year, month)
+        tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the pie chart.'''
+    valid,data_tuple = get_payment_method_expense_month_year_df(year, month)
+    if not valid:
+        return (False,data_tuple)
+    payment_method_expenses, max_spending = data_tuple
     fig=plt.Figure(figsize=(7, 7), dpi=100) # set the size of the figure and create a figure object
     ax = fig.add_subplot(111)
     payment_method_expenses = payment_method_expenses.sort_values(by='amount', ascending=False)
@@ -96,16 +103,22 @@ def piechart_payment_method_expense(year:int, month:int) -> Figure:
     ax.pie(payment_method_expenses['amount'], labels=payment_method_expenses['payment_method'], autopct='%1.1f%%',explode=explode,shadow=True,colors=colors,wedgeprops={'linewidth': 1.5, 'edgecolor': 'black'},textprops={'fontsize': 12,'color':'black','family':'arial','fontweight':'bold'},radius=1.1,center=(0, 0),pctdistance=0.8,labeldistance=1.1,startangle=90)
     ax.set_title(f'Payment Method Expenses for {months[month]} {year}',fontsize=20,family='arial',fontweight='bold',color='black')
     fig.tight_layout()
-    return fig
+    return (fig,True)
 
-def double_bar_graph_monthly_budget(year:int) -> Figure:
+def double_bar_graph_monthly_budget(year:int) -> tuple:
     ''' Generates a double bar graph of the monthly budget and expenses of a given year 
     args: 
         year (int): The year for which to generate the double bar graph.
     returns:    
-        fig (Figure): A figure object containing the double bar graph.'''
-    monthly_budget, max_budget = get_each_monthly_budget_year_df(year)
-    monthly_expenses, max_spending = get_each_monthly_expense_year_df(year)
+        tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the double bar graph.'''
+    valid,data_tuple = get_each_monthly_budget_year_df(year)
+    if not valid:
+        return (False,data_tuple)
+    monthly_budget, max_budget = data_tuple
+    valid,data_tuple = get_each_monthly_expense_year_df(year)
+    if not valid:
+        return (False,data_tuple)
+    monthly_expenses, max_spending = data_tuple
     # set the position of the xticks
     x = np.arange(len(monthly_budget['month']))
     # set the size of the figure
@@ -121,17 +134,23 @@ def double_bar_graph_monthly_budget(year:int) -> Figure:
     # to specify the label for each bar
     ax.legend()
     fig.tight_layout()
-    return fig
+    return (fig,True)
 
-def double_bar_graph_category_budget(year:int,month:int) -> Figure:
+def double_bar_graph_category_budget(year:int,month:int) -> tuple:
     ''' Generates a double bar graph of the category budget and expenses of a given month and year 
     args: 
         year (int): The year for which to generate the double bar graph.
         month (int): The month for which to generate the double bar graph.
     returns:    
-        fig (Figure): A figure object containing the double bar graph.'''
-    category_budget, max_budget = get_category_monthly_budget_year_df(year,month)
-    category_expenses, max_spending = get_category_expense_month_year_df(year,month)
+        tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the double bar graph.'''
+    valid,data_tuple = get_category_monthly_budget_year_df(year,month)
+    if not valid:
+        return (False,data_tuple)
+    category_budget, max_budget = data_tuple
+    valid,data_tuple = get_category_expense_month_year_df(year,month)
+    if not valid:
+        return (False,data_tuple)
+    category_expenses, max_spending = data_tuple
     # set the position of the xticks
     x = np.arange(len(category_budget['category']))
     # set the size of the figure
@@ -147,17 +166,23 @@ def double_bar_graph_category_budget(year:int,month:int) -> Figure:
     # to specify the label for each bar
     ax.legend()
     fig.tight_layout()
-    return fig
+    return (fig,True)
 
-def double_bar_graph_payment_method_budget(year:int,month:int) -> Figure:
+def double_bar_graph_payment_method_budget(year:int,month:int) -> tuple:
     ''' Generates a double bar graph of the payment method budget and expenses of a given month and year 
     args: 
         year (int): The year for which to generate the double bar graph.
         month (int): The month for which to generate the double bar graph.
     returns:    
-        fig (Figure): A figure object containing the double bar graph.'''
-    payment_method_budget, max_budget = get_payment_method_monthly_budget_year_df(year,month)
-    payment_method_expenses, max_spending = get_payment_method_expense_month_year_df(year,month)
+        tuple: A tuple containing a boolean indicating success or failure, and a figure object containing the double bar graph.'''
+    valid,data_tuple = get_payment_method_monthly_budget_year_df(year,month)
+    if not valid:
+        return (False,data_tuple)
+    payment_method_budget, max_budget = data_tuple
+    valid,data_tuple = get_payment_method_expense_month_year_df(year,month)
+    if not valid:
+        return (False,data_tuple)
+    payment_method_expenses, max_spending = data_tuple
     # set the position of the xticks
     x = np.arange(len(payment_method_budget['payment_method']))
     # set the size of the figure
@@ -173,12 +198,4 @@ def double_bar_graph_payment_method_budget(year:int,month:int) -> Figure:
     # to specify the label for each bar
     ax.legend()
     fig.tight_layout()
-    return fig
-
-"""bargraph_monthly_expense(2024)
-linegraph_daily_expense(2024,1)
-piechart_category_expense(2024,1)
-piechart_payment_method_expense(2024,1)
-double_bar_graph_monthly_budget(2024)
-double_bar_graph_category_budget(2024,3)
-double_bar_graph_payment_method_budget(2024,3)"""
+    return (fig,True)

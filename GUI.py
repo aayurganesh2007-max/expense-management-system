@@ -45,4 +45,13 @@ visualize_lbl.grid(row=5, column=0, pady=(20,0))#the tuple ensures that there is
 visualize_btn = tk.Button(frame, text = 'Enter', font=("Arial", 20, "bold"), bg="#e38c0a", fg="black", bd = 6, relief="raised", justify="center",command=lambda: open_visualizations_window(window))
 visualize_btn.grid(row=6, column=0)
 
+def safe_action():
+    ''' In case there is an error in the processing the user interface, 
+    and displays the error message to the user and closes the window.
+    args:
+        None
+    returns:
+        None'''
+    try:
+        
 window.mainloop()

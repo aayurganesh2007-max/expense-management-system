@@ -20,23 +20,27 @@ def set_update_monthly_budget(year:int, month:int, amount_limit:float) -> tuple:
         amount_limit (float): The budget limit for the specified month and year.
      returns:
         tuple: A tuple containing a boolean indicating success or failure, and a message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        valid,message = validate_input_year_month_amount(year, month, amount_limit)
-        if not valid:
-            return (False, message)
-        cursor.execute("SELECT * FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
-        existing_budget = cursor.fetchone()
-        if existing_budget:
-            cursor.execute("UPDATE monthly_budget SET amount_limit = ? WHERE year = ? AND month = ?", (amount_limit, year, month))
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            valid,message = validate_input_year_month_amount(year, month, amount_limit)
+            if not valid:
+                return (False, message)
+            cursor.execute("SELECT * FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
+            existing_budget = cursor.fetchone()
+            if existing_budget:
+                cursor.execute("UPDATE monthly_budget SET amount_limit = ? WHERE year = ? AND month = ?", (amount_limit, year, month))
+                refresh_monthly_budget_dfs()
+                object.commit()
+                return (True, "Monthly budget updated successfully.")
+            cursor.execute("INSERT INTO monthly_budget (year, month, amount_limit) VALUES (?, ?, ?)", (year, month, amount_limit))
             refresh_monthly_budget_dfs()
             object.commit()
-            return (True, "Monthly budget updated successfully.")
-        cursor.execute("INSERT INTO monthly_budget (year, month, amount_limit) VALUES (?, ?, ?)", (year, month, amount_limit))
-        refresh_monthly_budget_dfs()
-        object.commit()
-        return (True, "Monthly budget set successfully.")
-
+            return (True, "Monthly budget set successfully.")
+    except Exception as e:
+        return (False,str(e))
+    
 def set_update_monthly_category_budget(year:int, month:int, category:str, amount_limit:float) -> tuple:
     ''' Checks if a given year, month and category combination exists in the table
     if yes it updates the existing data with the new amount
@@ -49,18 +53,24 @@ def set_update_monthly_category_budget(year:int, month:int, category:str, amount
         amount_limit (float): The budget limit for the specified month, year and category.
      returns:
         tuple: A tuple containing a boolean indicating success or failure, and a message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        from expense import validate_category   
-        valid,message = validate_input_year_month_amount(year, month, amount_limit)
-        if not valid:
-            if not validate_category(category):
-                return (False,message+"Invalid category. Please provide a valid category.")
-            return (False, message)
-        cursor.execute("SELECT * FROM monthly_category_budget WHERE year = ? AND month = ? AND category = ?", (year, month, category))
-        existing_budget = cursor.fetchone()
-        if existing_budget:
-            cursor.execute("UPDATE monthly_category_budget SET amount_limit = ? WHERE year = ? AND month = ? AND category = ?", (amount_limit, year, month, category))
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            from expense import validate_category   
+            valid,message = validate_input_year_month_amount(year, month, amount_limit)
+            if not valid:
+                if not validate_category(category):
+                    return (False,message+"Invalid category. Please provide a valid category.")
+                return (False, message)
+            cursor.execute("SELECT * FROM monthly_category_budget WHERE year = ? AND month = ? AND category = ?", (year, month, category))
+            existing_budget = cursor.fetchone()
+            if existing_budget:
+                cursor.execute("UPDATE monthly_category_budget SET amount_limit = ? WHERE year = ? AND month = ? AND category = ?", (amount_limit, year, month, category))
+                refresh_monthly_category_budget_dfs()
+                object.commit()
+                return (True, "Monthly category budget updated successfully.")
+            cursor.execute("INSERT INTO monthly_category_budget (year, month, category, amount_limit) VALUES (?, ?, ?, ?)", (year, month, category, amount_limit))
             refresh_monthly_category_budget_dfs()
             object.commit()
             return (True, "Monthly category budget updated successfully.")
@@ -68,7 +78,9 @@ def set_update_monthly_category_budget(year:int, month:int, category:str, amount
         refresh_monthly_category_budget_dfs()
         object.commit()
         return (True, "Monthly category budget set successfully.")
-
+    except Exception as e:
+        return (False,str(e))
+    
 def set_update_monthly_payment_method_budget(year:int, month:int, payment_method:str, amount_limit:float) -> tuple:
     ''' Checks if a given year, month and payment_method combination exists in the table
     if yes it updates the existing data with the new amount
@@ -81,18 +93,24 @@ def set_update_monthly_payment_method_budget(year:int, month:int, payment_method
         amount_limit (float): The budget limit for the specified month, year and payment method.
      returns:
         tuple: A tuple containing a boolean indicating success or failure, and a message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        from expense import validate_payment_method   
-        valid,message = validate_input_year_month_amount(year, month, amount_limit)
-        if not valid:
-            if not validate_payment_method(payment_method):
-                return (False,message+"Invalid payment method. Please provide a valid payment method.")
-            return (False, message)
-        cursor.execute("SELECT * FROM monthly_payment_method_budget WHERE year = ? AND month = ? AND payment_method = ?", (year, month, payment_method))
-        existing_budget = cursor.fetchone()
-        if existing_budget:
-            cursor.execute("UPDATE monthly_payment_method_budget SET amount_limit = ? WHERE year = ? AND month = ? AND payment_method = ?", (amount_limit, year, month, payment_method))
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            from expense import validate_payment_method   
+            valid,message = validate_input_year_month_amount(year, month, amount_limit)
+            if not valid:
+                if not validate_payment_method(payment_method):
+                    return (False,message+"Invalid payment method. Please provide a valid payment method.")
+                return (False, message)
+            cursor.execute("SELECT * FROM monthly_payment_method_budget WHERE year = ? AND month = ? AND payment_method = ?", (year, month, payment_method))
+            existing_budget = cursor.fetchone()
+            if existing_budget:
+                cursor.execute("UPDATE monthly_payment_method_budget SET amount_limit = ? WHERE year = ? AND month = ? AND payment_method = ?", (amount_limit, year, month, payment_method))
+                refresh_monthly_payment_method_budget_dfs()
+                object.commit()
+                return (True, "Monthly payment method budget updated successfully.")
+            cursor.execute("INSERT INTO monthly_payment_method_budget (year, month, payment_method, amount_limit) VALUES (?, ?, ?, ?)", (year, month, payment_method, amount_limit))
             refresh_monthly_payment_method_budget_dfs()
             object.commit()
             return (True, "Monthly payment method budget updated successfully.")
@@ -100,7 +118,9 @@ def set_update_monthly_payment_method_budget(year:int, month:int, payment_method
         refresh_monthly_payment_method_budget_dfs()
         object.commit()
         return (True, "Monthly payment method budget set successfully.")
-
+    except Exception as e:    
+        return (False,str(e))
+    
 def get_monthly_budget(year:int, month:int,category:str=None,payment_method:str=None) -> tuple:
     ''' Retrieves the budget limit for a specific month and year.
         and if category is provided it returns budget limit for that category 
@@ -110,35 +130,40 @@ def get_monthly_budget(year:int, month:int,category:str=None,payment_method:str=
             month (int): The month for which the budget is to be retrieved (1-12).
         returns:
             tuple: A tuple containing a boolean indicating success or failure, and the budget limit or an error message.'''
-    with open_database_connection("budget.db") as object:
-
-        cursor = object.cursor()
-        if category:
-            from expense import validate_category   
-            if not validate_category(category):
-                return (False, "Invalid category. Please provide a valid category.")
-            cursor.execute("SELECT amount_limit FROM monthly_category_budget WHERE year = ? AND month = ? AND category = ?", (year, month, category))
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:    
+        with open_database_connection("budget.db") as object:    
+            cursor = object.cursor()
+            if category:
+                from expense import validate_category   
+                if not validate_category(category):
+                    return (False, "Invalid category. Please provide a valid category.")
+                cursor.execute("SELECT amount_limit FROM monthly_category_budget WHERE year = ? AND month = ? AND category = ?", (year, month, category))
+                budget = cursor.fetchone()
+                if budget:
+                    return (True, budget[0])
+                return (False, "No budget set for the specified parameters.")
+            if payment_method:
+                from expense import validate_payment_method
+                if not validate_payment_method(payment_method):
+                    return (False, "Invalid payment method. Please provide a valid payment method.")
+                cursor.execute("SELECT amount_limit FROM monthly_payment_method_budget WHERE year = ? AND month = ? AND payment_method = ?", (year, month, payment_method))
+                budget = cursor.fetchone()
+                if budget:
+                    return (True, budget[0])
+                return (False, "No budget set for the specified parameters.")
+            valid,message = validate_year_month(year, month)
+            if not valid:
+                return (False, message)
+            cursor.execute("SELECT amount_limit FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
             budget = cursor.fetchone()
             if budget:
                 return (True, budget[0])
-        if payment_method:
-            from expense import validate_payment_method
-            if not validate_payment_method(payment_method):
-                return (False, "Invalid payment method. Please provide a valid payment method.")
-            cursor.execute("SELECT amount_limit FROM monthly_payment_method_budget WHERE year = ? AND month = ? AND payment_method = ?", (year, month, payment_method))
-            budget = cursor.fetchone()
-            if budget:
-                return (True, budget[0])
-        valid,message = validate_year_month(year, month)
-        if not valid:
-            return (False, message)
-        cursor.execute("SELECT amount_limit FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
-        budget = cursor.fetchone()
-        if budget:
-            return (True, budget[0])
-        return (False, "No budget set for the specified parameters.")
+            return (False, "No budget set for the specified parameters.")
+    except Exception as e:
+        return (False,str(e))
     
-def monthly_expense(year:int, month:int,category:str = None,payment_method:str = None) -> float:
+def monthly_expense(year:int, month:int,category:str = None,payment_method:str = None) -> tuple:
     '''Calculates the total expenses for a given month and year.
         if category is provided it returns total expenses for that category 
         and if payment method is provided it returns total expenses for that payment method
@@ -151,25 +176,30 @@ def monthly_expense(year:int, month:int,category:str = None,payment_method:str =
 
     returns:
         tuple: A tuple containing a boolean indicating success or failure, and the total expenses or an error message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        if category:
-            from expense import validate_category
-            if not validate_category(category):
-                return (False, "Invalid category. Please provide a valid category.")
-            cursor.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? AND category = ?", (str(year), f"{month:02d}", category))
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        # expenses are stored in expense.db, so open that DB for expense queries
+        with open_database_connection("expense.db") as object:
+            cursor = object.cursor()
+            if category:
+                from expense import validate_category
+                if not validate_category(category):
+                    return (False, "Invalid category. Please provide a valid category.")
+                cursor.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? AND category = ?", (str(year), f"{month:02d}", category))
+                total_expense = cursor.fetchone()[0]
+                return (True,total_expense if total_expense else 0.0)
+            if payment_method:
+                from expense import validate_payment_method
+                if not validate_payment_method(payment_method):
+                    return (False, "Invalid payment method. Please provide a valid payment method.")
+                cursor.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? AND payment_method = ?", (str(year), f"{month:02d}", payment_method))
+                total_expense = cursor.fetchone()[0]
+                return (True,total_expense if total_expense else 0.0)
+            cursor.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ?", (str(year), f"{month:02d}"))
             total_expense = cursor.fetchone()[0]
             return (True,total_expense if total_expense else 0.0)
-        if payment_method:
-            from expense import validate_payment_method
-            if not validate_payment_method(payment_method):
-                return (False, "Invalid payment method. Please provide a valid payment method.")
-            cursor.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ? AND payment_method = ?", (str(year), f"{month:02d}", payment_method))
-            total_expense = cursor.fetchone()[0]
-            return (True,total_expense if total_expense else 0.0)
-        cursor.execute("SELECT SUM(amount) FROM expenses WHERE strftime('%Y', date) = ? AND strftime('%m', date) = ?", (str(year), f"{month:02d}"))
-        total_expense = cursor.fetchone()[0]
-        return (True,total_expense if total_expense else 0.0)
+    except Exception as e:        
+        return (False,str(e))
 
 def balance_budget(year:int, month:int, category:str=None, payment_method:str=None) -> tuple:
     '''Calculates the remaining budget for a given month and year.
@@ -198,13 +228,19 @@ def get_all_budgets() ->tuple:
 
     returns:
         tuple: A tuple of a boolean and a list of tuples, each containing the year, month, and amount_limit of a budget.or an error message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        cursor.execute("SELECT id,year, month, amount_limit FROM monthly_budget")
-        budgets = cursor.fetchall()
-        return (True,budgets)
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            cursor.execute("SELECT id,year, month, amount_limit FROM monthly_budget")
+            budgets = cursor.fetchall()
+            if budgets:
+                return (True,budgets)   
+            return (False,"No budgets found")
+    except Exception as e:
+        return (False,str(e))
 
-def get_all_category_budgets(year:int=None, month:int=None) -> list:
+def get_all_category_budgets(year:int=None, month:int=None) -> tuple:
     '''Retrieves all monthly category budgets for a specific month and year from the database.
     if only year is provided, retrieves all category budgets for that year.
     if year and month are not provided, retrieves all category budgets.
@@ -213,25 +249,35 @@ def get_all_category_budgets(year:int=None, month:int=None) -> list:
         year (int): The year for which to retrieve category budgets.(optional)
         month (int): The month for which to retrieve category budgets (1-12).(optional)
     returns:
-        list: A tuple of a boolean and a list of tuples, each containing the category and amount_limit of a budget.or an error message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        if year and month:
-            valid,message = validate_year_month(year, month)
-            if not valid:
-                return(False,message)
-            cursor.execute("SELECT category, amount_limit FROM monthly_category_budget WHERE year = ? AND month = ?", (year, month))
+        tuple: A tuple of a boolean and a list of tuples, each containing the category and amount_limit of a budget.or an error message.'''
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            if year and month:
+                valid,message = validate_year_month(year, month)
+                if not valid:
+                    return(False,message)
+                cursor.execute("SELECT category, amount_limit FROM monthly_category_budget WHERE year = ? AND month = ?", (year, month))
+                budgets = cursor.fetchall()
+                if budgets:
+                    return (True,budgets)   
+                return (False,"No budgets found")   
+            if year:
+                cursor.execute("SELECT category, amount_limit FROM monthly_category_budget WHERE year = ?", (year,))
+                budgets = cursor.fetchall()
+                if budgets:
+                    return (True,budgets)   
+                return (False,"No budgets found")
+            cursor.execute("SELECT id,year, month, category, amount_limit FROM monthly_category_budget")   
             budgets = cursor.fetchall()
-            return (True,budgets)
-        if year:
-            cursor.execute("SELECT category, amount_limit FROM monthly_category_budget WHERE year = ?", (year,))
-            budgets = cursor.fetchall()
-            return (True,budgets)
-        cursor.execute("SELECT id,year, month, category, amount_limit FROM monthly_category_budget")   
-        budgets = cursor.fetchall()
-        return (True,budgets)
+            if budgets:
+                return (True,budgets)
+            return (False,"No budgets found")
+    except Exception as e:    
+        return (False,str(e))
 
-def get_all_payment_method_budgets(year:int=None, month:int=None) -> list:
+def get_all_payment_method_budgets(year:int=None, month:int=None) -> tuple:
     '''Retrieves all monthly payment method budgets for a specific month and year from the database.
     if only year is provided, retrieves all payment method budgets for that year.
     if year and month are not provided, retrieves all payment method budgets.
@@ -240,23 +286,33 @@ def get_all_payment_method_budgets(year:int=None, month:int=None) -> list:
         year (int): The year for which to retrieve payment method budgets.(optional)
         month (int): The month for which to retrieve payment method budgets (1-12).(optional)
     returns:
-        list: A tuple of a boolean and a list of tuples, each containing the payment method and amount_limit of a budget.or an error message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        if year and month:
-            valid,message = validate_year_month(year, month)
-            if not valid:
-                return(False,message)
-            cursor.execute("SELECT payment_method, amount_limit FROM monthly_payment_method_budget WHERE year = ? AND month = ?", (year, month))
+        tuple: A tuple of a boolean and a list of tuples, each containing the payment method and amount_limit of a budget.or an error message.'''
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            if year and month:
+                valid,message = validate_year_month(year, month)
+                if not valid:
+                    return(False,message)
+                cursor.execute("SELECT payment_method, amount_limit FROM monthly_payment_method_budget WHERE year = ? AND month = ?", (year, month))
+                budgets = cursor.fetchall()
+                if budgets:
+                    return (True,budgets)   
+                return (False,"No budgets found")
+            if year:
+                cursor.execute("SELECT payment_method, amount_limit FROM monthly_payment_method_budget WHERE year = ?", (year,))
+                budgets = cursor.fetchall()
+                if budgets:
+                    return (True,budgets)   
+                return (False,"No budgets found")
+            cursor.execute("SELECT id,year, month, payment_method, amount_limit FROM monthly_payment_method_budget")   
             budgets = cursor.fetchall()
-            return (True,budgets)   
-        if year:
-            cursor.execute("SELECT payment_method, amount_limit FROM monthly_payment_method_budget WHERE year = ?", (year,))
-            budgets = cursor.fetchall()
-            return (True,budgets)
-        cursor.execute("SELECT id,year, month, payment_method, amount_limit FROM monthly_payment_method_budget")
-        budgets = cursor.fetchall()
-        return (True,budgets)
+            if budgets:
+                return (True,budgets)
+            return (False,"No budgets found")
+    except Exception as e:    
+        return (False,str(e))
 
 def delete_budget_limit(year:int, month:int, category:str=None, payment_method:str=None) -> tuple:
     '''Deletes the budget limit for a specific month and year.
@@ -268,28 +324,32 @@ def delete_budget_limit(year:int, month:int, category:str=None, payment_method:s
         month (int): The month for which the budget is to be deleted (1-12).
     returns:
         tuple: A tuple containing a boolean indicating success or failure, and a message.'''
-    with open_database_connection("budget.db") as object:
-        cursor = object.cursor()
-        if category:
-            from expense import validate_category
-            if not validate_category(category):
-                return (False, "Invalid category. Please provide a valid category.")
-            cursor.execute("DELETE FROM monthly_category_budget WHERE year = ? AND month = ? AND category = ?", (year, month, category))
-            refresh_monthly_category_budget_dfs()
+    #try except block to handle any exceptions that may occur during the operation, especially if the database is corrupted or inaccessible
+    try:
+        with open_database_connection("budget.db") as object:
+            cursor = object.cursor()
+            if category:
+                from expense import validate_category
+                if not validate_category(category):
+                    return (False, "Invalid category. Please provide a valid category.")
+                cursor.execute("DELETE FROM monthly_category_budget WHERE year = ? AND month = ? AND category = ?", (year, month, category))
+                refresh_monthly_category_budget_dfs()
+                object.commit()
+                return (True, "Monthly category budget deleted successfully.")
+            if payment_method:
+                from expense import validate_payment_method
+                if not validate_payment_method(payment_method):
+                    return (False, "Invalid payment method. Please provide a valid payment method.")
+                cursor.execute("DELETE FROM monthly_payment_method_budget WHERE year = ? AND month = ? AND payment_method = ?", (year, month, payment_method))
+                refresh_monthly_payment_method_budget_dfs()
+                object.commit()
+                return (True, "Monthly payment method budget deleted successfully.")
+            cursor.execute("DELETE FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
+            refresh_monthly_budget_dfs()
             object.commit()
-            return (True, "Monthly category budget deleted successfully.")
-        if payment_method:
-            from expense import validate_payment_method
-            if not validate_payment_method(payment_method):
-                return (False, "Invalid payment method. Please provide a valid payment method.")
-            cursor.execute("DELETE FROM monthly_payment_method_budget WHERE year = ? AND month = ? AND payment_method = ?", (year, month, payment_method))
-            refresh_monthly_payment_method_budget_dfs()
-            object.commit()
-            return (True, "Monthly payment method budget deleted successfully.")
-        cursor.execute("DELETE FROM monthly_budget WHERE year = ? AND month = ?", (year, month))
-        refresh_monthly_budget_dfs()
-        object.commit()
-        return (True, "Monthly budget deleted successfully.")
+            return (True, "Monthly budget deleted successfully.")
+    except Exception as e:
+        return (False,str(e))
 
 object.commit()
 close_database_connection(object)
