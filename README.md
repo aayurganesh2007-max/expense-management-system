@@ -214,6 +214,3 @@ This project prioritizes **correctness, stability, and clarity** over unnecessar
 ---
 
 
-
-Just tell me.
-
