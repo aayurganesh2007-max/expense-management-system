@@ -1,4 +1,4 @@
-**Expense Management System**
+# **Expense Management System**
 
 A "An Expense Management System" built using Python,Tkinter, SQLite, Pandas and Matplotlib, designed to help users track expenses, manage budgets, search records, and visualize financial data through an robust and simple GUI (made using Tkinter).
 This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), with a strong focus on clean design, robustness, realworld usability and scalabilty
@@ -78,13 +78,13 @@ This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), wi
   ```
 
 * **Important Design Decisions:**
-  - Seperate files for eacch responsibilty
+  - Seperate files for each responsibilty
   - Defensive programming with validations at multiple layers
   - Graceful handling of:
     - Empty databases
     - Missing months or categories
     - Partial budgets
-  - Try/except used only at meaningful boundarie
+  - Try/except used only at meaningful boundaries
   - Centralized constants to avoid duplication and inconsistency
   
 
@@ -95,8 +95,8 @@ This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), wi
   - PDF report exports
   - Chart export as images
 
-* **Learning Outcomes**
-  - Through this project, I gained hands-on experience with:
+* **Learning Experience**
+  - Building and Designing this project helped me learn:
     - Importance of defensive programming
     - Designing clean module boundaries
     - Handling real‑world imperfect data
