@@ -2,8 +2,9 @@
 
 A "An Expense Management System" built using Python,Tkinter, SQLite, Pandas and Matplotlib, designed to help users track expenses, manage budgets, search records, and visualize financial data through an robust and simple GUI (made using Tkinter).
 This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), with a strong focus on clean design, robustness, realworld usability and scalabilty
-
-<img width="604" height="579" alt="image" src="https://github.com/user-attachments/assets/6c763e1a-bbf8-45d6-8a69-6905ae0f61e5" />
+<img width="700" height="550" alt="image" src="https://github.com/user-attachments/assets/6c763e1a-bbf8-45d6-8a69-6905ae0f61e5" />
+<img width="400" height="350" alt="image" src="https://github.com/user-attachments/assets/58340f51-1136-439a-8a88-ed3c717e266d" /> <img width="400" height="350" alt="image" src="https://github.com/user-attachments/assets/fe110f92-1296-4824-b203-9871be44a10b" />
+<img width="400" height="350" alt="image" src="https://github.com/user-attachments/assets/bde3e056-ee4b-484b-9c22-35f4708e753f" />
 
 * **Core Features:**
   - Expense Management:
@@ -11,8 +12,7 @@ This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), wi
     - View and export expenses to CSV
     - Category‑wise expense tracking
     - Multiple payment methods support
-    - Robust validation with clear error feedback
-      <img width="1214" height="1011" alt="image" src="https://github.com/user-attachments/assets/58340f51-1136-439a-8a88-ed3c717e266d" />
+    - Robust validation with clear error feedback     
       
   - Budget Management:
     - Define monthly budgets
@@ -20,8 +20,7 @@ This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), wi
     - Define monthly per payment method budgets
     - Add, update, and delete budget entries
     - View all budgets together and export to CSV
-    - Handles partial or missing budgets gracefully
-       <img width="1246" height="1010" alt="image" src="https://github.com/user-attachments/assets/fe110f92-1296-4824-b203-9871be44a10b" />
+    - Handles partial or missing budgets gracefully    
 
   - Data Visualization & Analytics:
     - Bar Charts – Monthly expense summaries
@@ -29,8 +28,6 @@ This project was developed as part of a Databased Fall of Code ( DFOC-2025 ), wi
     - Pie Charts – Category‑wise distribution
     - Double Bar Charts – Budget vs actual comparison
     - Visualizations handle empty or sparse data without crashing
-      <img width="1697" height="1059" alt="image" src="https://github.com/user-attachments/assets/bde3e056-ee4b-484b-9c22-35f4708e753f" />
-
 
   - GUI (Tkinter):
     - Modular window layout
